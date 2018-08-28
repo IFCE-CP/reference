@@ -154,4 +154,102 @@ void primes(int l, int u, vector<int> &ans) {
 
 ### Miller-Rabin + Pollard's Rho
 
+https://uva.onlinejudge.org/index.php?option=onlinejudge&page=show_problem&problem=1333
+
+```c
+ll randll() {
+    ll t = rand();
+    return (t << 31) | rand();
+}
+
+ll mdc(ll a, ll b) {
+    return b ? mdc(b, a % b) : a;
+}
+
+ll sum(ll a, ll b, ll m) {
+    a += b;
+    if(a > m) a -= m;
+    return a;
+}
+
+ll mul(ll a, ll b, ll m) {
+    ll ans = 0;
+    while (b) {
+        if (b & 1) ans = sum(ans, a, m);
+        a = sum(a, a, m);
+        b >>= 1;
+    }
+    return ans;
+}
+
+ll exp(ll a, ll b, ll m) {
+    ll ans = 1;
+    while (b) {
+        if (b & 1) ans = mul(ans, a, m);
+        a = mul(a, a, m);
+        b >>= 1;
+    }
+    return ans;
+}
+
+// Miller-Rabin
+bool isPrime(ll n) {
+    
+    // testes suficientes para garantir corretude para n <= 10^18
+    static vector<int> a = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
+    
+    if (n <= 1) return false;
+    if (n <= 3) return true;
+
+    ll s = 0, d = n-1;
+    while(d % 2 == 0)
+        ++s, d >>= 1;
+
+    for(int i = 0; i < a.size() && a[i] < n; ++i) {
+        
+        ll x = exp(a[i], d, n);
+        if(x == 1 || x == n-1)
+            continue;
+        for(int r = 1; r < s; ++r) {
+            x = mul(x, x, n);
+            if(x == 1) return false;
+            if(x == n-1) break;
+        }
+        if(x != n-1) return false;
+    }
+    return true;
+}
+
+// usar em numeros impares
+ll pollardRho(ll n) {
+
+    ll x = (randll() % (n-1)) + 1;
+    ll c = (randll() % (n-1)) + 1;
+    ll y = x, d = 1;
+    while (d == 1) {
+        x = sum(mul(x, x, n), c, n);
+        y = sum(mul(y, y, n), c, n);
+        y = sum(mul(y, y, n), c, n);
+
+        d = mdc(abs(x - y), n);
+        if(d == n) return pollardRho(n);
+    }
+    return d;
+}
+
+// adiciona os fatores primos de n em ans (fora de ordem)
+void factors(ll n, vector<ll> &ans) {
+    
+    if(n <= 1) return;
+
+    if(isPrime(n))
+        ans.push_back(n);
+    else {
+        ll f = (n % 2 == 0 ? 2 : pollardRho(n));
+        factors(f, ans);
+        factors(n / f, ans);
+    }
+}
+```
+
 # Geometria Computacional
