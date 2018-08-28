@@ -32,6 +32,7 @@
   - [Euclides Extendido](#euclides-extendido)
   - [Inverso Multiplicativo](#inverso-multiplicativo)
   - [Crivo de Erastóstenes](#crivo-de-erastóstenes)
+    - [Crivo segmentado](#crivo-segmentado)
   - [Totiente de Euler](#totiente-de-euler)
   - [Exponenciação de Matrizes](#exponenciação-de-matrizes)
   - [Miller-Rabin + Pollard's Rho](#miller-rabin--pollards-rho)
@@ -45,7 +46,7 @@
 
 #### Lazy propagation
 
-#### persistent
+#### Persistent
 
 #### Segment Tree 2D
 
@@ -100,6 +101,52 @@
 ### Inverso Multiplicativo
 
 ### Crivo de Erastóstenes
+
+https://practice.geeksforgeeks.org/problems/sieve-of-eratosthenes/0/
+
+```c
+int p[MAX], np;
+bool isPrime[MAX];
+
+void crivo() {
+    p[np++] = 2;
+    isPrime[2] = false;
+    for (int i = 3; i < MAX; i += 2)
+        isPrime[i] = true;
+    for (int i = 3; i < MAX; i += 2)
+        if (isPrime[i]) {
+            p[np++] = i;
+            for (int j = 2*i; j < MAX; j += i)
+                isPrime[j] = false;
+        }
+}
+```
+
+#### Crivo segmentado
+
+https://www.spoj.com/problems/PRINT/
+
+```c
+// Primeiro gerar crivo até sqrt(maior valor)
+// Adiciona todos os primos no intervalo [l, u] em ans
+void primes(int l, int u, vector<int> &ans) {
+    
+    vector<bool> prime(u - l + 1, true);
+    if (l < 1) prime[0] = false;
+    if (l < 2) prime[1 - l] = false;
+
+    for (int i = 0; i < np && p[i] <= u; ++i) {
+        int start = (l > 1 ? p[i] * (l / p[i]) : 2*p[i]);
+        while (start < l || start == p[i]) start += p[i];
+        for (int j = start; j <= u; j += p[i])
+            prime[j - l] = false;
+    }
+
+    for (int i = 0; i < prime.size(); ++i)
+        if (prime[i])
+            ans.push_back(i + l);
+}
+```
 
 ### Totiente de Euler
 
