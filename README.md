@@ -58,6 +58,38 @@
 
 ### Trie
 
+https://www.spoj.com/problems/STRMATCH/
+
+```c
+struct Trie {
+
+    int cnt = 0; // numero de prefixos que terminam neste no
+    Trie *c[26];
+
+    Trie() {
+        memset(c, 0, sizeof c);
+    }
+
+    // insere s[i..] na trie
+    void insert(string &s, int i = 0) {
+        
+        ++cnt;
+        if(i >= s.length()) return;
+        if(c[s[i] - 'a'] == NULL)
+            c[s[i] - 'a'] = new Trie();
+        c[s[i] - 'a']->insert(s, i+1);
+    }
+
+    // retorna o numero de prefixos iguais a s
+    int count(string &s, int i = 0) {
+        
+        if(i == s.length()) return cnt;
+        if(c[s[i] - 'a'] == NULL) return 0;
+        return c[s[i] - 'a']->count(s, i+1);
+    }
+};
+```
+
 ### Union Find
 
 ### Ordered Set
