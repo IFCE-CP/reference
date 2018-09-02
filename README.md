@@ -89,6 +89,44 @@ struct Trie {
     }
 };
 ```
+```c
+struct Node{
+    Node *children[26];
+    int isEnd;
+    Node(){
+        for(int i = 0; i < 26; i++){
+            children[i] = NULL;
+        }
+        isEnd = 0;
+    }
+};
+
+struct Trie{
+    Node *root = new Node();
+    void insert(const string &s, int ini) {
+        Node *it = root;
+        for(int i = ini; i < (int)s.size(); i++){
+            char c = s[i];
+            if(!it->children[c-'a']){
+                it->children[c-'a'] = new Node();
+            }
+            it = it->children[c-'a'];
+            it->isEnd++;
+        } 
+    }
+    int search(const string &s){
+        Node *it = root;
+        int vezes=0;
+        for(auto c: s){
+            if(it->children[c-'a'] == NULL)
+                return 0;
+            it = it->children[c-'a'];
+        }
+        return it->isEnd;
+    }
+};
+
+```
 
 ### Union Find
 
