@@ -184,10 +184,10 @@ struct Trie{
 
 ### Ordenação Topológica
 
-//https://olimpiada.ic.unicamp.br/pratique/p2/2011/f2/escalona/
+https://olimpiada.ic.unicamp.br/pratique/p2/2011/f2/escalona/
 
 ```c
-    void bfs(vector<int> &ans){
+void bfs(vector<int> &ans){
 
     priority_queue<int> pq;
 
