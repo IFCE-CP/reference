@@ -56,6 +56,44 @@
 
 ### SQRT Decomposition
 
+https://www.urionlinejudge.com.br/judge/pt/problems/view/2800
+
+```c
+const int MAXR = 350; //raiz sempre fixa
+const int MAXN = 100010;
+
+int bucket[MAXR][MAXN];
+int arr[MAXN];
+
+// Altera o valor da posição id para x
+void update(int id, int x){
+    int bloco = id / MAXR;
+    bucket[bloco][arr[id]]--;
+    bucket[bloco][x]++;
+    arr[id] = x;
+}
+// A query retorna o número de valores iguais a W no intervalo A - B
+int query(int A, int B, int W){
+    int b1 = A/MAXR;
+    int b2 = B/MAXR;
+    int cnt = 0;
+    if(b1 == b2){
+        for(int i = A; i <= B; i++){
+            if(arr[i] == W) cnt++;
+        }
+    }
+    else{
+        for(int i = b1+1; i <= b2-1; i++)
+            cnt += bucket[i][W];
+        for(int i = A; i < (b1+1) * MAXR; i++)
+            if(arr[i] == W) cnt++;
+        for(int i = b2 * MAXR; i <= B; i++)
+            if(arr[i] == W) cnt++;
+    }
+    return cnt;
+}
+```
+
 ### Trie
 
 https://www.spoj.com/problems/STRMATCH/
