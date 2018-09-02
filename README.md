@@ -184,6 +184,28 @@ struct Trie{
 
 ### Ordenação Topológica
 
+//https://olimpiada.ic.unicamp.br/pratique/p2/2011/f2/escalona/
+
+```c
+    void bfs(vector<int> &ans){
+
+    priority_queue<int> pq;
+
+    for(int i = 0; i < n; i++) 
+        if(!grau[i]) pq.push(-i);
+
+    while(!pq.empty()){
+        int v = -pq.top(); pq.pop();
+        ans.push_back(v);
+        for(int u: adj[v]){
+            if(grau[u]){
+                grau[u]--;
+                if(!grau[u]) pq.push(-u);
+            }
+        }
+    }
+}
+```
 ### MST
 
 ### LCA
