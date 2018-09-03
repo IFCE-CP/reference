@@ -44,6 +44,74 @@
 
 #### Point update
 
+https://leetcode.com/problems/range-sum-query-mutable/description/
+
+```c
+struct SegmentTree {
+    
+    vector<int> tree;
+    int s, e;
+
+    SegmentTree(int s, int e, int val = 0): s(s), e(e) {
+        int sz = e - s + 1;
+        tree = vector<int>(4 * sz, val);
+    }
+    
+    SegmentTree(vector<int> &v) {
+        *this = SegmentTree(0, v.size() - 1);
+        build(v, 1, s, e);
+    }
+    
+    void build(vector<int> &v, int i, int a, int b) {
+        
+        if(a == b)
+            tree[i] = v[a];
+        else {
+            int m = (a + b) >> 1;
+            
+            build(v, 2*i, a, m);
+            build(v, 2*i + 1, m+1, b);
+            
+            tree[i] = tree[2*i] + tree[2*i + 1];
+        }
+    }
+    
+    void update(int p, int val, int i, int a, int b) {
+        
+        if(a > p || b < p) return;
+        
+        if(a == b && p == a)
+            tree[i] = val;
+        else {
+            int m = (a + b) >> 1;
+            
+            update(p, val, 2*i, a, m);
+            update(p, val, 2*i + 1, m+1, b);
+            
+            tree[i] = tree[2*i] + tree[2*i + 1];
+        }
+    }
+    
+    int query(int A, int B, int i, int a, int b) {
+        
+        if(a > B || b < A) return 0;
+        
+        if(a >= A && b <= B) return tree[i];
+        
+        int m = (a + b) >> 1;
+        return query(A, B, 2*i, a, m) + query(A, B, 2*i + 1, m+1, b);
+    }
+    
+    void update(int p, int val) {
+        update(p, val, 1, s, e);
+    }
+    
+    int query(int A, int B) {
+        return query(A, B, 1, s, e);
+    }
+};
+```
+
 #### Lazy propagation
 
 #### Persistent
