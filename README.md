@@ -98,6 +98,8 @@ int query(int A, int B, int W){
 
 https://www.spoj.com/problems/STRMATCH/
 
+Versão recursiva
+
 ```c
 struct Trie {
 
@@ -127,6 +129,9 @@ struct Trie {
     }
 };
 ```
+
+Versão iterativa
+
 ```c
 struct Node{
     Node *children[26];
@@ -163,7 +168,6 @@ struct Trie{
         return it->isEnd;
     }
 };
-
 ```
 
 ### Union Find
@@ -206,6 +210,7 @@ void bfs(vector<int> &ans){
     }
 }
 ```
+
 ### MST
 
 ### LCA
