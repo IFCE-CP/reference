@@ -20,7 +20,7 @@
   - [Componentes Fortemente Conexos](#componentes-fortemente-conexos)
   - [Ordenação Topológica](#ordenação-topológica)
   - [MST](#mst)
-  - [LCA](#lca)
+  - [Lowest Common Ancestor](#lowest-common-ancestor)
   - [Bipartite Matching](#bipartite-matching)
   - [Fluxo](#fluxo)
 - [**Strings**](#strings)
@@ -281,7 +281,50 @@ void bfs(vector<int> &ans){
 
 ### MST
 
-### LCA
+### Lowest Common Ancestor
+
+https://www.spoj.com/problems/LCA/
+
+```c
+#define MAX 100100
+#define LOG_MAX 20
+
+vector<int> g[MAX];
+int anc[MAX][LOG_MAX], h[MAX];
+
+void dfs(int u, int p, int hu) {
+    if(h[u] > -1) return;
+    h[u] = hu;
+    anc[u][0] = p;
+    for(auto v : g[u])
+        dfs(v, u, hu + 1);
+}
+
+void build(int n) {
+    memset(h, -1, sizeof h);
+    dfs(1, 0, 0);
+    for(int i = 1; i < LOG_MAX; ++i)
+        for(int v = 1; v <= n; ++v)
+            anc[v][i] = anc[ anc[v][i-1] ][i-1];
+}
+
+int lca(int u, int v) {
+
+    if(h[u] > h[v]) swap(u, v);
+
+    for(int i = LOG_MAX-1; i >= 0; --i)
+        if(h[v] - h[u] >= (1 << i))
+            v = anc[v][i];
+    
+    if(u == v) return u;
+
+    for(int i = LOG_MAX-1; i >= 0; --i)
+        if(anc[u][i] != anc[v][i])
+            u = anc[u][i], v = anc[v][i];
+
+    return anc[u][0];
+}
+```
 
 ### Bipartite Matching
 
