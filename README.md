@@ -366,6 +366,19 @@ void zf(string &s, vector<int> &z) {
 
 ### MDC e MMC
 
+https://practice.geeksforgeeks.org/problems/lcm-and-gcd/0
+
+```c
+// __gcd(a, b)
+int mdc(int a, int b) {
+    return b ? mdc(b, a % b) : a;
+}
+
+int mmc(int a, int b) {
+    return a * b / mdc(a, b);
+}
+```
+
 ### Euclides Extendido
 
 ### Inverso Multiplicativo
