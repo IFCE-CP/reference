@@ -381,6 +381,23 @@ int mmc(int a, int b) {
 
 ### Euclides Extendido
 
+```c
+// x * a + y * b = mdc(a, b)
+int mdc(int a, int b, int &x, int &y) {
+    
+    if(b == 0) {
+        x = 1, y = 0;
+        return a;
+    }
+
+    int x2, y2;
+    int m = mdc(b, a % b, x2, y2);
+    x = y2;
+    y = x2 - (a / b) * y2;
+    return m;
+}
+```
+
 ### Inverso Multiplicativo
 
 ### Crivo de Erastóstenes
