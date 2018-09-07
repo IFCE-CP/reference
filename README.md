@@ -240,6 +240,39 @@ struct Trie{
 
 ### Union Find
 
+https://www.hackerearth.com/practice/data-structures/disjoint-data-strutures/basics-of-disjoint-data-structures/practice-problems/algorithm/count-friends/
+
+```c
+struct UnionFind {
+    
+    vector<int> p, rnk, cnt;
+    int n;
+    
+    UnionFind(int n): n(n) {
+        rnk = vector<int>(n, 0);
+        cnt = vector<int>(n, 1);
+        p = vector<int>(n);
+        for(int i = 0; i < p.size(); ++i)
+            p[i] = i;
+    }
+    
+    int find(int v) {
+        return p[v] == v ? v : v = find(p[v]);
+    }
+    
+    void uni(int u, int v) {
+        int pu = find(u), pv = find(v);
+        rnk[pu] < rnk[pv] ? p[pu] = pv : p[pv] = pu;
+        rnk[pu] < rnk[pv] ? cnt[pv] += cnt[pu] : cnt[pu] += cnt[pv];
+        if(rnk[pu] == rnk[pv]) ++rnk[pu];
+    }
+    
+    int count(int v) {
+        return cnt[find(v)];
+    }
+};
+```
+
 ### Ordered Set
 
 # Grafos
