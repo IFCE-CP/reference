@@ -243,16 +243,15 @@ struct Trie{
 https://www.hackerearth.com/practice/data-structures/disjoint-data-strutures/basics-of-disjoint-data-structures/practice-problems/algorithm/count-friends/
 
 ```c
+typedef vector<int> vi;
+
 struct UnionFind {
     
-    vector<int> p, rnk, cnt;
+    vi p, rnk, cnt;
     int n;
     
-    UnionFind(int n): n(n) {
-        rnk = vector<int>(n, 0);
-        cnt = vector<int>(n, 1);
-        p = vector<int>(n);
-        for(int i = 0; i < p.size(); ++i)
+    UnionFind(int n): n(n), p(vi(n)), rnk(vi(n, 0)), cnt(vi(n, 1)) {
+        for(int i = 0; i < n; ++i)
             p[i] = i;
     }
     
