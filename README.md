@@ -120,6 +120,50 @@ struct SegmentTree {
 
 ### BIT
 
+https://www.urionlinejudge.com.br/judge/pt/problems/view/2857
+
+```c
+struct Bit { //1-indexado
+
+    int n;
+    vector<int> arr;
+
+    int lsone(int x) {
+        return x & -x;
+    }
+
+    Bit(int N, int val = 0): n(N + 1) {
+        arr = vector<int>(N + 1, val);
+    }
+
+    Bit(vector<int> &v) {
+
+        *this = Bit(v.size());
+        for (int i = 1; i <= n; ++i)
+            update(v[i], i);
+    }
+
+    void update(int pos, int val) {
+
+        for (; pos < n; pos += lsone(pos))
+            arr[pos] += val;
+    }
+
+    int get(int pos) {
+
+        int sum = 0;
+        for (; pos > 0; pos -= lsone(pos))
+            sum += arr[pos];
+        return sum;
+    }
+
+    int get(int a, int b) {
+        return get (b) - get(a - 1);
+    }
+};
+```
+
+
 ### Sparse Table
 
 ### SQRT Decomposition
