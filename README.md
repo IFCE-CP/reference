@@ -635,18 +635,16 @@ void factors(ll n, vector<ll> &ans) {
 https://practice.geeksforgeeks.org/problems/check-if-two-line-segments-intersect/0
 
 ```c
-typedef long long int ll;
-
 struct Point {
     
-    ll x, y;
+    double x, y;
 
-    Point(ll x = 0, ll y = 0): x(x), y(y) {}
+    Point(double x = 0, double y = 0): x(x), y(y) {}
 
     int direction(Point p1, Point p2) {
 
-        ll d = (p1.y - this->y) * (p2.x - p1.x) -
-               (p2.y - p1.y) * (p1.x - this->x);
+        double d = (p1.y - this->y) * (p2.x - p1.x) -
+                   (p2.y - p1.y) * (p1.x - this->x);
         if (d > 0) //Vira para esquerda
             return 1;
         if (d < 0) //Vira para direita
@@ -661,10 +659,10 @@ struct Line {
     double dist;
 
     Line(Point s, Point e): s(s), e(e) {
-        dist = hypot(abs(e.x - s.x), abs(e.y - s.y));
+        dist = hypot(fabs(e.x - s.x), fabs(e.y - s.y));
     }
 
-    Line(ll sx = 0, ll sy = 0, ll ex = 0, ll ey = 0) {
+    Line(double sx = 0, double sy = 0, double ex = 0, double ey = 0) {
         *this = Line(Point(sx, sy), Point(ex, ey));
     }
 
@@ -677,8 +675,8 @@ struct Line {
     bool contains(Point p) {
         
         return onSegment(p) &&
-               min(s.x, e.x) <= p.x && max(s.x, e.x) >= p.x &&
-               min(s.y, e.y) <= p.y && max(s.y, e.y) >= p.y;
+               fmin(s.x, e.x) <= p.x && fmax(s.x, e.x) >= p.x &&
+               fmin(s.y, e.y) <= p.y && fmax(s.y, e.y) >= p.y;
     }
 
     bool intersect(Line other) {
