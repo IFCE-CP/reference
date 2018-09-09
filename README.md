@@ -629,3 +629,72 @@ void factors(ll n, vector<ll> &ans) {
 ```
 
 # Geometria Computacional
+
+### Interseção de Retas
+
+https://practice.geeksforgeeks.org/problems/check-if-two-line-segments-intersect/0
+
+```c
+typedef long long int ll;
+
+struct Point {
+    
+    ll x, y;
+
+    Point(ll x = 0, ll y = 0): x(x), y(y) {}
+
+    int direction(Point p1, Point p2) {
+
+        ll d = (p1.y - this->y) * (p2.x - p1.x) -
+               (p2.y - p1.y) * (p1.x - this->x);
+        if (d > 0) //Vira para esquerda
+            return 1;
+        if (d < 0) //Vira para direita
+            return -1;
+        return 0;  //Os 3 estao alinhados
+    }
+};
+
+struct Line {
+
+    Point s, e;
+    double dist;
+
+    Line(Point s, Point e): s(s), e(e) {
+        dist = hypot(abs(e.x - s.x), abs(e.y - s.y));
+    }
+
+    Line(ll sx = 0, ll sy = 0, ll ex = 0, ll ey = 0) {
+        *this = Line(Point(sx, sy), Point(ex, ey));
+    }
+
+    //Retorna true se p esta no segmento ou na projecao dele
+    bool onSegment(Point p) {
+        return !s.direction(e, p);
+    }
+
+    //Retorna true se p esta no segmento
+    bool contains(Point p) {
+        
+        return onSegment(p) &&
+               min(s.x, e.x) <= p.x && max(s.x, e.x) >= p.x &&
+               min(s.y, e.y) <= p.y && max(s.y, e.y) >= p.y;
+    }
+
+    bool intersect(Line other) {
+
+        int o1 = this->s.direction(this->e, other.s);
+        int o2 = this->s.direction(this->e, other.e);
+        int o3 = other.s.direction(other.e, this->s);
+        int o4 = other.s.direction(other.e, this->e);
+
+        if (o1 != o2 && o3 != o4) return true;
+        if (this->contains(other.s)) return true;
+        if (this->contains(other.e)) return true;
+        if (other.contains(this->s)) return true;
+        if (other.contains(this->e)) return true;
+
+        return false;
+    }
+};
+```
