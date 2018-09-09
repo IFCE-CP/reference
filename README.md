@@ -696,3 +696,31 @@ struct Line {
     }
 };
 ```
+
+### Área de polígono
+
+https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/
+https://www.math10.com/en/geometry/geogebra/fullscreen.html
+
+```c
+struct Polygon {
+    
+    vector<Point> points;
+    int n;
+
+    Polygon(vector<Point> p): points(p) {
+        n = p.size();
+    }
+
+    double area() {
+
+        double a = 0.0;
+        int j = n - 1;
+        for (int i = 0; i < n; ++i) {
+            a += (points[j].x + points[i].x) * (points[j].y - points[i].y);
+            j = i;
+        }
+        return fabs(a * 0.5);
+    }
+};
+```
