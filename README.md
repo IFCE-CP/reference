@@ -37,6 +37,9 @@
   - [Exponenciação de Matrizes](#exponenciação-de-matrizes)
   - [Miller-Rabin + Pollard's Rho](#miller-rabin--pollards-rho)
 - [**Geometria Computacional**](#geometria-computacional)
+  - [Interseção de Retas](interseção-de-retas)
+  - [Área de polígono](área-de-polígono)
+
 
 # Estruturas de dados
 
