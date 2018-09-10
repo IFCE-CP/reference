@@ -529,6 +529,23 @@ void primes(int l, int u, vector<int> &ans) {
 
 ### Totiente de Euler
 
+https://practice.geeksforgeeks.org/problems/euler-totient-function/0/
+
+```c
+int phi(int n) {
+    int ans = 1;
+    for(int i = 0; i < np && p[i]*p[i] <= n; ++i) {
+        if(n % p[i] == 0) {
+            ans *= p[i] - 1;
+            for(n /= p[i]; n % p[i] == 0; n /= p[i])
+                ans *= p[i];
+        }
+    }
+    if(n > 1) ans *= n-1;
+    return ans;
+}
+```
+
 ### Exponenciação de Matrizes
 
 ### Miller-Rabin + Pollard's Rho
