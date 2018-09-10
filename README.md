@@ -531,6 +531,8 @@ void primes(int l, int u, vector<int> &ans) {
 
 https://practice.geeksforgeeks.org/problems/euler-totient-function/0/
 
+Para um único número
+
 ```c
 int phi(int n) {
     int ans = 1;
@@ -545,6 +547,24 @@ int phi(int n) {
     return ans;
 }
 ```
+
+Para um intervalo
+
+```c
+int phi[MAX];
+
+void build_phi() {
+    for(int i = 1; i < MAX; ++i)
+        phi[i] = i;
+    for(int i = 2; i < MAX; ++i)
+        if(phi[i] == i) {
+            phi[i] = i - 1;
+            for(int j = 2*i; j < MAX; j += i)
+                phi[j] = (phi[j] / i) * (i - 1);
+        }
+}
+```
+
 
 ### Exponenciação de Matrizes
 
