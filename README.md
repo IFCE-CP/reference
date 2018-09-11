@@ -773,12 +773,16 @@ https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/
 https://www.math10.com/en/geometry/geogebra/fullscreen.html
 
 ```c
-struct Polygon {
-    
-    vector<Point> points;
+struct PointSet {
+
+    vector<Point> p;
     int n;
 
-    Polygon(vector<Point> p): points(p) {
+    PointSet(int n): n(n) {
+        p = vector<Point>(n);
+    }
+
+    PointSet(vector<Point> points): p(points) {
         n = p.size();
     }
 
@@ -787,10 +791,13 @@ struct Polygon {
         double a = 0.0;
         int j = n - 1;
         for (int i = 0; i < n; ++i) {
-            a += (points[j].x + points[i].x) * (points[j].y - points[i].y);
+            a += (p[j].x + p[i].x) * (p[j].y - p[i].y);
             j = i;
         }
         return fabs(a * 0.5);
     }
+
+    //Convex Hull
+    stack<Point> grahamScan();
 };
 ```
