@@ -712,15 +712,13 @@ struct Point {
 
     Point(double x = 0, double y = 0): x(x), y(y) {}
 
-    int direction(Point p1, Point p2) {
+    int orientation(Point p1, Point p2) {
 
         double d = (p1.y - this->y) * (p2.x - p1.x) -
-                   (p2.y - p1.y) * (p1.x - this->x);
-        if (d > 0) //Vira para esquerda
-            return 1;
-        if (d < 0) //Vira para direita
-            return -1;
-        return 0;  //Os 3 estao alinhados
+                   (p1.x - this->x) * (p2.y - p1.y);
+        if (d > 0) return 1; // horario
+        if (d < 0) return 2; // anti-horario
+        return 0;            // colineares
     }
 };
 
@@ -737,9 +735,10 @@ struct Line {
         *this = Line(Point(sx, sy), Point(ex, ey));
     }
 
-    //Retorna true se p esta no segmento ou na projecao dele
+    //Retorna true se p esta no segmento ou 
+    //na projecao do segmento
     bool onSegment(Point p) {
-        return !s.direction(e, p);
+        return !s.orientation(e, p);
     }
 
     //Retorna true se p esta no segmento
@@ -752,18 +751,16 @@ struct Line {
 
     bool intersect(Line other) {
 
-        int o1 = this->s.direction(this->e, other.s);
-        int o2 = this->s.direction(this->e, other.e);
-        int o3 = other.s.direction(other.e, this->s);
-        int o4 = other.s.direction(other.e, this->e);
+        int o1 = this->s.orientation(this->e, other.s);
+        int o2 = this->s.orientation(this->e, other.e);
+        int o3 = other.s.orientation(other.e, this->s);
+        int o4 = other.s.orientation(other.e, this->e);
 
-        if (o1 != o2 && o3 != o4) return true;
-        if (this->contains(other.s)) return true;
-        if (this->contains(other.e)) return true;
-        if (other.contains(this->s)) return true;
-        if (other.contains(this->e)) return true;
-
-        return false;
+        return (o1 != o2 && o3 != o4)  ||
+               this->contains(other.s) ||
+               this->contains(other.e) ||
+               other.contains(this->s) ||
+               other.contains(this->e);
     }
 };
 ```
@@ -799,7 +796,7 @@ struct PointSet {
     }
 
     //Convex Hull
-    stack<Point> grahamScan();
+    vector<Point> grahamScan();
 };
 ```
 
@@ -809,28 +806,18 @@ struct PointSet {
 https://practice.geeksforgeeks.org/problems/convex-hull/0
 
 ```c
-//Pega o segundo elemento da pilha
-Point nextToTop(stack<Point>& s) {
-
-    Point p1 = s.top(); s.pop();
-    Point p2 = s.top();
-    s.push(p1);
-    return p2;
-}
-
 Point p0; //Vertice inicial do convex hull
 
 //Ordena pontos no sentido anti-horario
 bool cmp(Point p1, Point p2) {
 
     int ori = p0.orientation(p1, p2);
-    if (!ori)
-        return Line(p0, p2).dist >= Line(p0, p1).dist;
-    return ori == 2 ? true : false;
+    return !ori ? Line(p0, p2).dist >= Line(p0, p1).dist :
+           ori == 2;
 }
 
-//Retorna pilha com os pontos do convex hull
-stack<Point> PointSet::grahamScan() {
+//Retorna vetor de pontos do convex hull
+vector<Point> PointSet::grahamScan() {
 
     vector<Point> newP;
     Point pMin = p[0];
@@ -851,17 +838,17 @@ stack<Point> PointSet::grahamScan() {
             i++;
         newP.push_back(p[i]);
     }
-
-    stack<Point> poly;
-
+    vector<Point> poly(newP.size());
     if (newP.size() > 2) {
         for (int i = 0; i < 3; ++i)
-            poly.push(newP[i]);
-        for (int i = 3; i < newP.size() && poly.size() > 2; ++i) {
-            while (nextToTop(poly).orientation(poly.top(), newP[i]) != 2)
-                poly.pop();
-            poly.push(newP[i]);
+            poly[i] = newP[i];
+        int m = 3;
+        for (int i = 3; i < newP.size(); ++i) {
+            while (poly[m - 2].orientation(poly[m - 1], newP[i]) != 2)
+                --m;
+            poly[m++] = newP[i];
         }
+        poly.resize(m);
     }
     return poly;
 }
