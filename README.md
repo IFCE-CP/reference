@@ -37,8 +37,9 @@
   - [Exponenciação de Matrizes](#exponenciação-de-matrizes)
   - [Miller-Rabin + Pollard's Rho](#miller-rabin--pollards-rho)
 - [**Geometria Computacional**](#geometria-computacional)
-  - [Interseção de Retas](interseção-de-retas)
-  - [Área de polígono](área-de-polígono)
+  - [Interseção de Retas](#interseção-de-retas)
+  - [Área de polígono](#área-de-polígono)
+  - [Convex Hull](#convex-hull)
 
 
 # Estruturas de dados
@@ -800,4 +801,68 @@ struct PointSet {
     //Convex Hull
     stack<Point> grahamScan();
 };
+```
+
+
+### Convex Hull
+
+https://practice.geeksforgeeks.org/problems/convex-hull/0
+
+```c
+//Pega o segundo elemento da pilha
+Point nextToTop(stack<Point>& s) {
+
+    Point p1 = s.top(); s.pop();
+    Point p2 = s.top();
+    s.push(p1);
+    return p2;
+}
+
+Point p0; //Vertice inicial do convex hull
+
+//Ordena pontos no sentido anti-horario
+bool cmp(Point p1, Point p2) {
+
+    int ori = p0.orientation(p1, p2);
+    if (!ori)
+        return Line(p0, p2).dist >= Line(p0, p1).dist;
+    return ori == 2 ? true : false;
+}
+
+//Retorna pilha com os pontos do convex hull
+stack<Point> PointSet::grahamScan() {
+
+    vector<Point> newP;
+    Point pMin = p[0];
+    int iMin = 0;
+
+    for (int i = 1; i < n; ++i)
+        if (p[i].y < pMin.y || (p[i].y == pMin.y && p[i].x < pMin.x)) {
+            pMin = p[i];
+            iMin = i;
+        }
+    swap(p[iMin], p[0]);
+    p0 = p[0];
+    newP.push_back(p0);
+    sort(p.begin() + 1, p.end(), cmp);
+
+    for (int i = 1; i < n; ++i) {
+        while (i < n - 1 && !p0.orientation(p[i], p[i + 1]))
+            i++;
+        newP.push_back(p[i]);
+    }
+
+    stack<Point> poly;
+
+    if (newP.size() > 2) {
+        for (int i = 0; i < 3; ++i)
+            poly.push(newP[i]);
+        for (int i = 3; i < newP.size() && poly.size() > 2; ++i) {
+            while (nextToTop(poly).orientation(poly.top(), newP[i]) != 2)
+                poly.pop();
+            poly.push(newP[i]);
+        }
+    }
+    return poly;
+}
 ```
