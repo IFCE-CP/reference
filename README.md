@@ -180,6 +180,53 @@ struct Trie{
 
 ### Pontes e Pontos de Articulação
 
+```c
+const int MAXN = 550;
+
+int d[MAXN], low[MAXN], tempo=0, raiz;
+/*
+d[u] é o tempo de descoberta de u
+low[u] é o menor d de um descendente próprio de u
+*/
+vector<int> adj[MAXN];
+vector<int> vertices_corte;
+vector<pair<int, int> > pontes;
+
+void dfs(int u, int p){
+
+    int nf = 0;
+
+    bool any = false;
+
+    d[u] = low[u] = ++tempo;
+    for(int v: adj[u]){
+
+        if(!d[v]){
+            dfs(v, u);
+            nf++;
+
+            if(low[v] >= d[u]) any = true;
+
+            low[u] = min(low[u], low[v]);
+
+            if(low[v] > d[u]){
+                // u-v é uma ponte
+                pontes.push_back({v, u});
+            }
+
+        }
+        else if(v != p){
+            low[u] = min(low[u], d[v]);
+        }
+    }
+    if( (u == raiz && nf >= 2) || (u != raiz && any) ){
+        // u é um vértice de corte
+        vertices_corte.push_back(u);
+    }
+}
+
+```
+
 ### Componentes Fortemente Conexos
 
 ### Ordenação Topológica
