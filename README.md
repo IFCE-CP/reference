@@ -50,6 +50,8 @@
 
 https://leetcode.com/problems/range-sum-query-mutable/description/
 
+Range Sum Query
+
 ```c
 struct SegmentTree {
     
@@ -117,6 +119,91 @@ struct SegmentTree {
 ```
 
 #### Lazy propagation
+
+https://www.urionlinejudge.com.br/judge/pt/problems/view/1500
+
+Range Sum Query
+
+```c
+struct SegmentTree {
+    
+    vector<ll> tree, lazy;
+    int s, e;
+
+    SegmentTree(int s, int e): s(s), e(e) {
+        int sz = e - s + 1;
+        tree = lazy = vector<ll>(4*sz, 0);
+    }
+
+    SegmentTree(vector<ll> &v) {
+        *this = SegmentTree(0, v.size() - 1);
+        build(v, 1, s, e);
+    }
+
+    void build(vector<ll> &v, int i, int a, int b) {
+        lazy[i] = 0;
+        if(a == b)
+            tree[i] = v[i];
+        else {
+            int m = (a + b) >> 1;
+            build(v, 2*i, a, m);
+            build(v, 2*i + 1, m+1, b);
+            tree[i] = tree[2*i] + tree[2*i + 1];
+        }
+    }
+
+    void propagate(int i, int a, int b) {
+
+        if(!lazy[i]) return;
+
+        tree[i] += (b - a + 1) * lazy[i];
+        if(a != b) {
+            lazy[2*i] += lazy[i];
+            lazy[2*i + 1] += lazy[i];
+        }
+        lazy[i] = 0;
+    }
+
+    void update(int A, int B, ll val, int i, int a, int b) {
+
+        propagate(i, a, b);
+        if(a > B || b < A) return;
+
+        if(a >= A && b <= B) {
+            tree[i] += (b - a + 1) * val;
+            if(a != b) {
+                lazy[2*i] += val;
+                lazy[2*i + 1] += val;
+            }
+        }
+        else {
+            int m = (a + b) >> 1;
+            update(A, B, val, 2*i, a, m);
+            update(A, B, val, 2*i + 1, m+1, b);
+            tree[i] = tree[2*i] + tree[2*i + 1];
+        }
+    }
+
+    ll query(int A, int B, int i, int a, int b) {
+        
+        if(a > B || b < A) return 0;
+        propagate(i, a, b);
+
+        if(a >= A && b <= B) return tree[i];
+
+        int m = (a + b) >> 1;
+        return query(A, B, 2*i, a, m) + query(A, B, 2*i + 1, m+1, b);
+    }
+
+    void update(int A, int B, ll val) {
+        update(A, B, val, 1, s, e);
+    }
+
+    ll query(int A, int B) {
+        return query(A, B, 1, s, e);
+    }
+};
+```
 
 #### Persistent
 
