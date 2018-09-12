@@ -508,7 +508,7 @@ void dfs(int u, int p){
 
             if(low[v] > d[u]){
                 // u-v é uma ponte
-                pontes.push_back({v, u});
+                pontes.push_back({u, v});
             }
 
         }
