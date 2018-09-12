@@ -7,6 +7,7 @@
     - [Persistent](#persistent)
     - [Segment Tree 2D](#segment-tree-2d)
   - [Fenwick Tree / BIT](#bit)
+    - [BIT 2D](#bit-2d)
   - [Sparse Table](#sparse-table)
   - [SQRT Decomposition](#sqrt-decomposition)
   - [Trie](#trie)
@@ -254,6 +255,33 @@ struct Bit { //1-indexado
 };
 ```
 
+#### BIT 2D
+
+https://www.urionlinejudge.com.br/judge/pt/problems/view/1112
+
+```c
+int bit[MAX][MAX];
+
+void update(int x, int y, int val) {
+    for(int i = x; i < MAX; i += i & -i)
+        for(int j = y; j < MAX; j += j & -j)
+            bit[i][j] += val;
+}
+
+int get(int x, int y) {
+    int ans = 0;
+    for(int i = x; i > 0; i -= i & -i)
+        for(int j = y; j > 0; j -= j & -j)
+            ans += bit[i][j];
+    return ans;
+}
+
+int get(int x1, int y1, int x2, int y2) {
+    if(x1 > x2) swap(x1, x2);
+    if(y1 > y2) swap(y1, y2);
+    return get(x2, y2) - get(x1-1, y2) - get(x2, y1-1) + get(x1-1, y1-1);
+}
+```
 
 ### Sparse Table
 
