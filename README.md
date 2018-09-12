@@ -773,6 +773,18 @@ https://www.math10.com/en/geometry/geogebra/fullscreen.html
 ```c
 struct PointSet {
 
+private:
+    //Par de pontos mais proximos (forca bruta)
+    ppp closestByBruteForce(Point[], int);
+
+    //Par de pontos mais proximos que estao a
+    //uma distancia minima do ponto central
+    ppp closestStrip(Point[], int, double);
+
+    //Par de pontos mais proximos (Recursivo)
+    ppp closestUtil(Point[], int);
+
+public:
     vector<Point> p;
     int n;
 
@@ -797,6 +809,13 @@ struct PointSet {
 
     //Convex Hull
     vector<Point> grahamScan();
+
+    //Retorna o par de pontos mais proximos
+    ppp closestPair();
+
+    //Retorna a distancia entre os pontos
+    //mais proximos
+    double minimumDist();
 };
 ```
 
@@ -851,5 +870,98 @@ vector<Point> PointSet::grahamScan() {
         poly.resize(m);
     }
     return poly;
+}
+```
+
+
+### Pares Mais Próximos
+
+https://www.urionlinejudge.com.br/judge/pt/problems/view/1295
+
+```c
+typedef pair<Point, Point> ppp;
+
+//Ordena pontos pelo x
+bool cmpX(Point p1, Point p2) {
+    return p1.x < p2.x;
+}
+
+//Ordena pontos pelo y
+bool cmpY(Point p1, Point p2) {
+    return p1.y < p2.y;
+}
+
+ppp PointSet::closestStrip(Point strip[], int m, double minD) {
+
+    ppp res = {{-INF, -INF}, {INF, INF}};
+    for (int i = 0; i < m - 1; ++i)
+        for (int j = i + 1; j < m && strip[j].y - strip[i].y < minD; ++j)
+            if (Line(strip[i], strip[j]).dist < minD) {
+                minD = Line(strip[i], strip[j]).dist;
+                res = {strip[i], strip[j]};
+            }
+    return res;
+}
+
+ppp PointSet::closestByBruteForce(Point vp[], int sz) {
+
+    ppp res = {{-INF, -INF}, {INF, INF}};
+    for (int i = 0; i < sz - 1; ++i)
+        for (int j = i + 1; j < sz; ++j)
+            if (Line(vp[i], vp[j]).dist < Line(res.first, res.second).dist)
+                res = {vp[i], vp[j]};
+    return res;
+}
+
+ppp PointSet::closestUtil(Point px[], int sz) {
+
+    if (sz < 4)
+        return closestByBruteForce(px, sz);
+
+    int mid = (sz - 1) / 2, l = 0, r = 0;
+    Point midP = px[mid];
+    Point pxl[sz], pxr[sz];
+    ppp res;
+
+    for(int i = 0; i < sz; i++) {
+        if(px[i].x < midP.x || (px[i].x == midP.x && r > l))
+            pxl[l++] = px[i];
+        else
+            pxr[r++] = px[i];
+    }
+    ppp pl = closestUtil(pxl, l);
+    ppp pr = closestUtil(pxr, r);
+    double plDist = Line(pl.first, pl.second).dist;
+    double prDist = Line(pr.first, pr.second).dist;
+    double d = fmin(plDist, prDist);
+    res = plDist < prDist ? pl : pr;
+
+    sort(px, px + sz, cmpY);
+
+    Point strip[sz];
+    int m = 0;
+    for (int i = 0; i < sz; ++i)
+        if (fabs(px[i].x - midP.x) < d)
+            strip[m++] = px[i];
+
+    ppp spDist = closestStrip(strip, m, d);
+    if (Line(spDist.first, spDist.second).dist < d)
+        return spDist;
+    return res;
+}
+
+ppp PointSet::closestPair() {
+
+    Point px[n];
+    for (int i = 0; i < n; ++i) px[i] = p[i];
+    sort(px, px + n, cmpX);
+    return closestUtil(px, n);
+}
+
+double PointSet::minimumDist() {
+
+    if (n < 2) return INF;
+    ppp close = closestPair();
+    return Line(close.first, close.second).dist;
 }
 ```
