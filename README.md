@@ -437,6 +437,20 @@ struct UnionFind {
 
 ### Ordered Set
 
+http://codeforces.com/blog/entry/11080?locale=en
+
+```c
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+
+using namespace __gnu_pbds;
+
+typedef tree<int, null_type, less<int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
+// st.find_by_order(k) - iterador para o k-ésimo menor elemento (0-indexado)
+// st.order_by_key(x) - número de elementos menores que x
+```
+
 # Grafos
 
 ### Dijkstra
@@ -508,7 +522,7 @@ void dfs(int u, int p){
 
             if(low[v] > d[u]){
                 // u-v é uma ponte
-                pontes.push_back({u, v});
+                pontes.push_back({v, u});
             }
 
         }
