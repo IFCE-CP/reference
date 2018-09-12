@@ -7,6 +7,7 @@
     - [Persistent](#persistent)
     - [Segment Tree 2D](#segment-tree-2d)
   - [Fenwick Tree / BIT](#bit)
+    - [BIT 2D](#bit-2d)
   - [Sparse Table](#sparse-table)
   - [SQRT Decomposition](#sqrt-decomposition)
   - [Trie](#trie)
@@ -20,7 +21,7 @@
   - [Componentes Fortemente Conexos](#componentes-fortemente-conexos)
   - [Ordenação Topológica](#ordenação-topológica)
   - [MST](#mst)
-  - [LCA](#lca)
+  - [Lowest Common Ancestor](#lowest-common-ancestor)
   - [Bipartite Matching](#bipartite-matching)
   - [Fluxo](#fluxo)
 - [**Strings**](#strings)
@@ -37,6 +38,10 @@
   - [Exponenciação de Matrizes](#exponenciação-de-matrizes)
   - [Miller-Rabin + Pollard's Rho](#miller-rabin--pollards-rho)
 - [**Geometria Computacional**](#geometria-computacional)
+  - [Interseção de Retas](#interseção-de-retas)
+  - [Área de polígono](#área-de-polígono)
+  - [Convex Hull](#convex-hull)
+
 
 # Estruturas de dados
 
@@ -44,13 +49,239 @@
 
 #### Point update
 
+https://leetcode.com/problems/range-sum-query-mutable/description/
+
+Range Sum Query
+
+```c
+struct SegmentTree {
+    
+    vector<int> tree;
+    int s, e;
+
+    SegmentTree(int s, int e, int val = 0): s(s), e(e) {
+        int sz = e - s + 1;
+        tree = vector<int>(4 * sz, val);
+    }
+    
+    SegmentTree(vector<int> &v) {
+        *this = SegmentTree(0, v.size() - 1);
+        build(v, 1, s, e);
+    }
+    
+    void build(vector<int> &v, int i, int a, int b) {
+        
+        if(a == b)
+            tree[i] = v[a];
+        else {
+            int m = (a + b) >> 1;
+            
+            build(v, 2*i, a, m);
+            build(v, 2*i + 1, m+1, b);
+            
+            tree[i] = tree[2*i] + tree[2*i + 1];
+        }
+    }
+    
+    void update(int p, int val, int i, int a, int b) {
+        
+        if(a > p || b < p) return;
+        
+        if(a == b && p == a)
+            tree[i] = val;
+        else {
+            int m = (a + b) >> 1;
+            
+            update(p, val, 2*i, a, m);
+            update(p, val, 2*i + 1, m+1, b);
+            
+            tree[i] = tree[2*i] + tree[2*i + 1];
+        }
+    }
+    
+    int query(int A, int B, int i, int a, int b) {
+        
+        if(a > B || b < A) return 0;
+        
+        if(a >= A && b <= B) return tree[i];
+        
+        int m = (a + b) >> 1;
+        return query(A, B, 2*i, a, m) + query(A, B, 2*i + 1, m+1, b);
+    }
+    
+    void update(int p, int val) {
+        update(p, val, 1, s, e);
+    }
+    
+    int query(int A, int B) {
+        return query(A, B, 1, s, e);
+    }
+};
+```
+
 #### Lazy propagation
+
+https://www.urionlinejudge.com.br/judge/pt/problems/view/1500
+
+Range Sum Query
+
+```c
+struct SegmentTree {
+    
+    vector<ll> tree, lazy;
+    int s, e;
+
+    SegmentTree(int s, int e): s(s), e(e) {
+        int sz = e - s + 1;
+        tree = lazy = vector<ll>(4*sz, 0);
+    }
+
+    SegmentTree(vector<ll> &v) {
+        *this = SegmentTree(0, v.size() - 1);
+        build(v, 1, s, e);
+    }
+
+    void build(vector<ll> &v, int i, int a, int b) {
+        lazy[i] = 0;
+        if(a == b)
+            tree[i] = v[i];
+        else {
+            int m = (a + b) >> 1;
+            build(v, 2*i, a, m);
+            build(v, 2*i + 1, m+1, b);
+            tree[i] = tree[2*i] + tree[2*i + 1];
+        }
+    }
+
+    void propagate(int i, int a, int b) {
+
+        if(!lazy[i]) return;
+
+        tree[i] += (b - a + 1) * lazy[i];
+        if(a != b) {
+            lazy[2*i] += lazy[i];
+            lazy[2*i + 1] += lazy[i];
+        }
+        lazy[i] = 0;
+    }
+
+    void update(int A, int B, ll val, int i, int a, int b) {
+
+        propagate(i, a, b);
+        if(a > B || b < A) return;
+
+        if(a >= A && b <= B) {
+            tree[i] += (b - a + 1) * val;
+            if(a != b) {
+                lazy[2*i] += val;
+                lazy[2*i + 1] += val;
+            }
+        }
+        else {
+            int m = (a + b) >> 1;
+            update(A, B, val, 2*i, a, m);
+            update(A, B, val, 2*i + 1, m+1, b);
+            tree[i] = tree[2*i] + tree[2*i + 1];
+        }
+    }
+
+    ll query(int A, int B, int i, int a, int b) {
+        
+        if(a > B || b < A) return 0;
+        propagate(i, a, b);
+
+        if(a >= A && b <= B) return tree[i];
+
+        int m = (a + b) >> 1;
+        return query(A, B, 2*i, a, m) + query(A, B, 2*i + 1, m+1, b);
+    }
+
+    void update(int A, int B, ll val) {
+        update(A, B, val, 1, s, e);
+    }
+
+    ll query(int A, int B) {
+        return query(A, B, 1, s, e);
+    }
+};
+```
 
 #### Persistent
 
 #### Segment Tree 2D
 
 ### BIT
+
+https://www.urionlinejudge.com.br/judge/pt/problems/view/2857
+
+```c
+struct Bit { //1-indexado
+
+    int n;
+    vector<int> arr;
+
+    int lsone(int x) {
+        return x & -x;
+    }
+
+    Bit(int N, int val = 0): n(N + 1) {
+        arr = vector<int>(N + 1, val);
+    }
+
+    Bit(vector<int> &v) {
+
+        *this = Bit(v.size());
+        for (int i = 1; i <= n; ++i)
+            update(v[i], i);
+    }
+
+    void update(int pos, int val) {
+
+        for (; pos < n; pos += lsone(pos))
+            arr[pos] += val;
+    }
+
+    int get(int pos) {
+
+        int sum = 0;
+        for (; pos > 0; pos -= lsone(pos))
+            sum += arr[pos];
+        return sum;
+    }
+
+    int get(int a, int b) {
+        return get (b) - get(a - 1);
+    }
+};
+```
+
+#### BIT 2D
+
+https://www.urionlinejudge.com.br/judge/pt/problems/view/1112
+
+```c
+int bit[MAX][MAX];
+
+void update(int x, int y, int val) {
+    for(int i = x; i < MAX; i += i & -i)
+        for(int j = y; j < MAX; j += j & -j)
+            bit[i][j] += val;
+}
+
+int get(int x, int y) {
+    int ans = 0;
+    for(int i = x; i > 0; i -= i & -i)
+        for(int j = y; j > 0; j -= j & -j)
+            ans += bit[i][j];
+    return ans;
+}
+
+int get(int x1, int y1, int x2, int y2) {
+    if(x1 > x2) swap(x1, x2);
+    if(y1 > y2) swap(y1, y2);
+    return get(x2, y2) - get(x1-1, y2) - get(x2, y1-1) + get(x1-1, y1-1);
+}
+```
 
 ### Sparse Table
 
@@ -98,6 +329,8 @@ int query(int A, int B, int W){
 
 https://www.spoj.com/problems/STRMATCH/
 
+Versão recursiva
+
 ```c
 struct Trie {
 
@@ -127,6 +360,9 @@ struct Trie {
     }
 };
 ```
+
+Versão iterativa
+
 ```c
 struct Node{
     Node *children[26];
@@ -163,16 +399,77 @@ struct Trie{
         return it->isEnd;
     }
 };
-
 ```
 
 ### Union Find
+
+https://www.hackerearth.com/practice/data-structures/disjoint-data-strutures/basics-of-disjoint-data-structures/practice-problems/algorithm/count-friends/
+
+```c
+typedef vector<int> vi;
+
+struct UnionFind {
+    
+    vi p, rnk, cnt;
+    int n;
+    
+    UnionFind(int n): n(n), p(vi(n)), rnk(vi(n, 0)), cnt(vi(n, 1)) {
+        for(int i = 0; i < n; ++i)
+            p[i] = i;
+    }
+    
+    int find(int v) {
+        return p[v] == v ? v : v = find(p[v]);
+    }
+    
+    void uni(int u, int v) {
+        int pu = find(u), pv = find(v);
+        rnk[pu] < rnk[pv] ? p[pu] = pv : p[pv] = pu;
+        rnk[pu] < rnk[pv] ? cnt[pv] += cnt[pu] : cnt[pu] += cnt[pv];
+        if(rnk[pu] == rnk[pv]) ++rnk[pu];
+    }
+    
+    int count(int v) {
+        return cnt[find(v)];
+    }
+};
+```
 
 ### Ordered Set
 
 # Grafos
 
 ### Dijkstra
+
+https://www.hackerrank.com/challenges/dijkstrashortreach/problem
+
+```c
+int dist[MAX];
+
+int dijkstra(int orig, int dest) {
+
+    memset(dist, 0x3f, sizeof dist);
+    dist[orig] = 0;
+    priority_queue<pii> pq;
+    pq.push(pii(0, orig));
+    while(!pq.empty()) {
+        
+        auto p = pq.top(); pq.pop();
+        int d = -p.first;
+        int u = p.second;
+        
+        if(u == dest) return d;
+        if(d > dist[u]) continue;
+        
+        for(auto v : g[u])
+            if(d + v.second < dist[v.first]) {
+                dist[v.first] = d + v.second;
+                pq.push(pii(-dist[v.first], v.first));
+            }
+    }
+    return -1;
+}
+```
 
 ### Bellman-Ford
 
@@ -253,9 +550,53 @@ void bfs(vector<int> &ans){
     }
 }
 ```
+
 ### MST
 
-### LCA
+### Lowest Common Ancestor
+
+https://www.spoj.com/problems/LCA/
+
+```c
+#define MAX 100100
+#define LOG_MAX 20
+
+vector<int> g[MAX];
+int anc[MAX][LOG_MAX], h[MAX];
+
+void dfs(int u, int p, int hu) {
+    if(h[u] > -1) return;
+    h[u] = hu;
+    anc[u][0] = p;
+    for(auto v : g[u])
+        dfs(v, u, hu + 1);
+}
+
+void build(int n) {
+    memset(h, -1, sizeof h);
+    dfs(1, 0, 0);
+    for(int i = 1; i < LOG_MAX; ++i)
+        for(int v = 1; v <= n; ++v)
+            anc[v][i] = anc[ anc[v][i-1] ][i-1];
+}
+
+int lca(int u, int v) {
+
+    if(h[u] > h[v]) swap(u, v);
+
+    for(int i = LOG_MAX-1; i >= 0; --i)
+        if(h[v] - h[u] >= (1 << i))
+            v = anc[v][i];
+    
+    if(u == v) return u;
+
+    for(int i = LOG_MAX-1; i >= 0; --i)
+        if(anc[u][i] != anc[v][i])
+            u = anc[u][i], v = anc[v][i];
+
+    return anc[u][0];
+}
+```
 
 ### Bipartite Matching
 
@@ -297,7 +638,37 @@ void zf(string &s, vector<int> &z) {
 
 ### MDC e MMC
 
+https://practice.geeksforgeeks.org/problems/lcm-and-gcd/0
+
+```c
+// __gcd(a, b)
+int mdc(int a, int b) {
+    return b ? mdc(b, a % b) : a;
+}
+
+int mmc(int a, int b) {
+    return a * b / mdc(a, b);
+}
+```
+
 ### Euclides Extendido
+
+```c
+// x * a + y * b = mdc(a, b)
+int mdc(int a, int b, int &x, int &y) {
+    
+    if(b == 0) {
+        x = 1, y = 0;
+        return a;
+    }
+
+    int x2, y2;
+    int m = mdc(b, a % b, x2, y2);
+    x = y2;
+    y = x2 - (a / b) * y2;
+    return m;
+}
+```
 
 ### Inverso Multiplicativo
 
@@ -350,6 +721,43 @@ void primes(int l, int u, vector<int> &ans) {
 ```
 
 ### Totiente de Euler
+
+https://practice.geeksforgeeks.org/problems/euler-totient-function/0/
+
+Para um único número
+
+```c
+int phi(int n) {
+    int ans = 1;
+    for(int i = 0; i < np && p[i]*p[i] <= n; ++i) {
+        if(n % p[i] == 0) {
+            ans *= p[i] - 1;
+            for(n /= p[i]; n % p[i] == 0; n /= p[i])
+                ans *= p[i];
+        }
+    }
+    if(n > 1) ans *= n-1;
+    return ans;
+}
+```
+
+Para um intervalo
+
+```c
+int phi[MAX];
+
+void build_phi() {
+    for(int i = 1; i < MAX; ++i)
+        phi[i] = i;
+    for(int i = 2; i < MAX; ++i)
+        if(phi[i] == i) {
+            phi[i] = i - 1;
+            for(int j = 2*i; j < MAX; j += i)
+                phi[j] = (phi[j] / i) * (i - 1);
+        }
+}
+```
+
 
 ### Exponenciação de Matrizes
 
@@ -454,3 +862,156 @@ void factors(ll n, vector<ll> &ans) {
 ```
 
 # Geometria Computacional
+
+### Interseção de Retas
+
+https://practice.geeksforgeeks.org/problems/check-if-two-line-segments-intersect/0
+
+```c
+struct Point {
+    
+    double x, y;
+
+    Point(double x = 0, double y = 0): x(x), y(y) {}
+
+    int orientation(Point p1, Point p2) {
+
+        double d = (p1.y - this->y) * (p2.x - p1.x) -
+                   (p1.x - this->x) * (p2.y - p1.y);
+        if (d > 0) return 1; // horario
+        if (d < 0) return 2; // anti-horario
+        return 0;            // colineares
+    }
+};
+
+struct Line {
+
+    Point s, e;
+    double dist;
+
+    Line(Point s, Point e): s(s), e(e) {
+        dist = hypot(fabs(e.x - s.x), fabs(e.y - s.y));
+    }
+
+    Line(double sx = 0, double sy = 0, double ex = 0, double ey = 0) {
+        *this = Line(Point(sx, sy), Point(ex, ey));
+    }
+
+    //Retorna true se p esta no segmento ou 
+    //na projecao do segmento
+    bool onSegment(Point p) {
+        return !s.orientation(e, p);
+    }
+
+    //Retorna true se p esta no segmento
+    bool contains(Point p) {
+        
+        return onSegment(p) &&
+               fmin(s.x, e.x) <= p.x && fmax(s.x, e.x) >= p.x &&
+               fmin(s.y, e.y) <= p.y && fmax(s.y, e.y) >= p.y;
+    }
+
+    bool intersect(Line other) {
+
+        int o1 = this->s.orientation(this->e, other.s);
+        int o2 = this->s.orientation(this->e, other.e);
+        int o3 = other.s.orientation(other.e, this->s);
+        int o4 = other.s.orientation(other.e, this->e);
+
+        return (o1 != o2 && o3 != o4)  ||
+               this->contains(other.s) ||
+               this->contains(other.e) ||
+               other.contains(this->s) ||
+               other.contains(this->e);
+    }
+};
+```
+
+### Área de polígono
+
+https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/
+https://www.math10.com/en/geometry/geogebra/fullscreen.html
+
+```c
+struct PointSet {
+
+    vector<Point> p;
+    int n;
+
+    PointSet(int n): n(n) {
+        p = vector<Point>(n);
+    }
+
+    PointSet(vector<Point> points): p(points) {
+        n = p.size();
+    }
+
+    double area() {
+
+        double a = 0.0;
+        int j = n - 1;
+        for (int i = 0; i < n; ++i) {
+            a += (p[j].x + p[i].x) * (p[j].y - p[i].y);
+            j = i;
+        }
+        return fabs(a * 0.5);
+    }
+
+    //Convex Hull
+    vector<Point> grahamScan();
+};
+```
+
+
+### Convex Hull
+
+https://practice.geeksforgeeks.org/problems/convex-hull/0
+
+```c
+Point p0; //Vertice inicial do convex hull
+
+//Ordena pontos no sentido anti-horario
+bool cmp(Point p1, Point p2) {
+
+    int ori = p0.orientation(p1, p2);
+    return !ori ? Line(p0, p2).dist >= Line(p0, p1).dist :
+           ori == 2;
+}
+
+//Retorna vetor de pontos do convex hull
+vector<Point> PointSet::grahamScan() {
+
+    vector<Point> newP;
+    Point pMin = p[0];
+    int iMin = 0;
+
+    for (int i = 1; i < n; ++i)
+        if (p[i].y < pMin.y || (p[i].y == pMin.y && p[i].x < pMin.x)) {
+            pMin = p[i];
+            iMin = i;
+        }
+    swap(p[iMin], p[0]);
+    p0 = p[0];
+    newP.push_back(p0);
+    sort(p.begin() + 1, p.end(), cmp);
+
+    for (int i = 1; i < n; ++i) {
+        while (i < n - 1 && !p0.orientation(p[i], p[i + 1]))
+            i++;
+        newP.push_back(p[i]);
+    }
+    vector<Point> poly(newP.size());
+    if (newP.size() > 2) {
+        for (int i = 0; i < 3; ++i)
+            poly[i] = newP[i];
+        int m = 3;
+        for (int i = 3; i < newP.size(); ++i) {
+            while (poly[m - 2].orientation(poly[m - 1], newP[i]) != 2)
+                --m;
+            poly[m++] = newP[i];
+        }
+        poly.resize(m);
+    }
+    return poly;
+}
+```
