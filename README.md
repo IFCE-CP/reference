@@ -716,9 +716,9 @@ struct Point {
 
         double d = (p1.y - this->y) * (p2.x - p1.x) -
                    (p1.x - this->x) * (p2.y - p1.y);
-        if (d > 0) return 1; // horario
-        if (d < 0) return 2; // anti-horario
-        return 0;            // colineares
+        if (fabs(d) < EPS) return 0; // colineares
+        if (d > 0) return 1;         // horario
+        return 2;                    // anti-horario
     }
 };
 
@@ -735,17 +735,17 @@ struct Line {
         *this = Line(Point(sx, sy), Point(ex, ey));
     }
 
-    //Retorna true se p esta no segmento ou 
-    //na projecao do segmento
-    bool onSegment(Point p) {
+    //Retorna true se p e colinear com os
+    //extremos do segmento (s e)
+    bool collinear(Point p) {
         return !s.orientation(e, p);
     }
 
     //Retorna true se p esta no segmento
+    //Deve ser usado apos collinear
     bool contains(Point p) {
         
-        return onSegment(p) &&
-               fmin(s.x, e.x) <= p.x && fmax(s.x, e.x) >= p.x &&
+        return fmin(s.x, e.x) <= p.x && fmax(s.x, e.x) >= p.x &&
                fmin(s.y, e.y) <= p.y && fmax(s.y, e.y) >= p.y;
     }
 
@@ -757,10 +757,24 @@ struct Line {
         int o4 = other.s.orientation(other.e, this->e);
 
         return (o1 != o2 && o3 != o4)  ||
-               this->contains(other.s) ||
-               this->contains(other.e) ||
-               other.contains(this->s) ||
-               other.contains(this->e);
+               (!o1 && this->contains(other.s)) ||
+               (!o2 && this->contains(other.e)) ||
+               (!o3 && other.contains(this->s)) ||
+               (!o4 && other.contains(this->e));
+    }
+
+    //Produto escalar
+    double dot(Line other) {
+        
+        return (this->e.x - this->s.x) * (other.e.x - other.s.x) +
+               (this->e.y - this->s.y) * (other.e.y - other.s.y);
+    }
+
+    //Produto vetorial
+    double cross(Line other) {
+
+        return (this->e.x - this->s.x) * (other.e.y - other.s.y) -
+               (this->e.y - this->s.y) * (other.e.x - other.s.x);
     }
 };
 ```
@@ -816,6 +830,10 @@ public:
     //Retorna a distancia entre os pontos
     //mais proximos
     double minimumDist();
+
+    //Retorna verdadeiro se o ponto esta dentro
+    //do poligono representado pelo Pointset
+    bool inPolygon(Point);
 };
 ```
 
@@ -963,5 +981,43 @@ double PointSet::minimumDist() {
     if (n < 2) return INF;
     ppp close = closestPair();
     return Line(close.first, close.second).dist;
+}
+```
+
+###Ponto Dentro do Polígono
+
+```c
+//Retorna o vetor ab (representado por Line)
+Line toVec(Point a, Point b) {
+    return Line({0, 0}, {b.x - a.x, b.y - a.y});
+}
+
+//Retorna o angulo aob em radianos
+double angle(Point a, Point o, Point b) {
+
+    Line oa = toVec(o, a);
+    Line ob = toVec(o, b);
+    return acos(oa.dot(ob) / (oa.dist * ob.dist));
+}
+
+//Nao considera pontos em vertices
+//como pontos internos
+bool PointSet::inPolygon2(Point pt) {
+
+    double sum = 0;
+    int j = n - 1;
+    for (int i = 0; i < n; ++i) {
+        //Descomentar para considerar pontos nos
+        //vertices como internos
+        // Line edge(p[j], p[i]);
+        // if (edge.collinear(pt) && edge.contains(pt))
+        //     return true;
+        double ang = angle(p[j], pt, p[i]);
+        if (p[j].orientation(pt, p[i]) == 2)
+            sum += ang;
+        else sum -= ang;
+        j = i;
+    }
+    return fabs(fabs(sum) - 2 * M_PI) < EPS;
 }
 ```
