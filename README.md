@@ -7,6 +7,7 @@
     - [Persistent](#persistent)
     - [Segment Tree 2D](#segment-tree-2d)
   - [Fenwick Tree / BIT](#bit)
+    - [BIT 2D](#bit-2d)
   - [Sparse Table](#sparse-table)
   - [SQRT Decomposition](#sqrt-decomposition)
   - [Trie](#trie)
@@ -51,6 +52,8 @@
 #### Point update
 
 https://leetcode.com/problems/range-sum-query-mutable/description/
+
+Range Sum Query
 
 ```c
 struct SegmentTree {
@@ -120,6 +123,91 @@ struct SegmentTree {
 
 #### Lazy propagation
 
+https://www.urionlinejudge.com.br/judge/pt/problems/view/1500
+
+Range Sum Query
+
+```c
+struct SegmentTree {
+    
+    vector<ll> tree, lazy;
+    int s, e;
+
+    SegmentTree(int s, int e): s(s), e(e) {
+        int sz = e - s + 1;
+        tree = lazy = vector<ll>(4*sz, 0);
+    }
+
+    SegmentTree(vector<ll> &v) {
+        *this = SegmentTree(0, v.size() - 1);
+        build(v, 1, s, e);
+    }
+
+    void build(vector<ll> &v, int i, int a, int b) {
+        lazy[i] = 0;
+        if(a == b)
+            tree[i] = v[i];
+        else {
+            int m = (a + b) >> 1;
+            build(v, 2*i, a, m);
+            build(v, 2*i + 1, m+1, b);
+            tree[i] = tree[2*i] + tree[2*i + 1];
+        }
+    }
+
+    void propagate(int i, int a, int b) {
+
+        if(!lazy[i]) return;
+
+        tree[i] += (b - a + 1) * lazy[i];
+        if(a != b) {
+            lazy[2*i] += lazy[i];
+            lazy[2*i + 1] += lazy[i];
+        }
+        lazy[i] = 0;
+    }
+
+    void update(int A, int B, ll val, int i, int a, int b) {
+
+        propagate(i, a, b);
+        if(a > B || b < A) return;
+
+        if(a >= A && b <= B) {
+            tree[i] += (b - a + 1) * val;
+            if(a != b) {
+                lazy[2*i] += val;
+                lazy[2*i + 1] += val;
+            }
+        }
+        else {
+            int m = (a + b) >> 1;
+            update(A, B, val, 2*i, a, m);
+            update(A, B, val, 2*i + 1, m+1, b);
+            tree[i] = tree[2*i] + tree[2*i + 1];
+        }
+    }
+
+    ll query(int A, int B, int i, int a, int b) {
+        
+        if(a > B || b < A) return 0;
+        propagate(i, a, b);
+
+        if(a >= A && b <= B) return tree[i];
+
+        int m = (a + b) >> 1;
+        return query(A, B, 2*i, a, m) + query(A, B, 2*i + 1, m+1, b);
+    }
+
+    void update(int A, int B, ll val) {
+        update(A, B, val, 1, s, e);
+    }
+
+    ll query(int A, int B) {
+        return query(A, B, 1, s, e);
+    }
+};
+```
+
 #### Persistent
 
 #### Segment Tree 2D
@@ -169,6 +257,33 @@ struct Bit { //1-indexado
 };
 ```
 
+#### BIT 2D
+
+https://www.urionlinejudge.com.br/judge/pt/problems/view/1112
+
+```c
+int bit[MAX][MAX];
+
+void update(int x, int y, int val) {
+    for(int i = x; i < MAX; i += i & -i)
+        for(int j = y; j < MAX; j += j & -j)
+            bit[i][j] += val;
+}
+
+int get(int x, int y) {
+    int ans = 0;
+    for(int i = x; i > 0; i -= i & -i)
+        for(int j = y; j > 0; j -= j & -j)
+            ans += bit[i][j];
+    return ans;
+}
+
+int get(int x1, int y1, int x2, int y2) {
+    if(x1 > x2) swap(x1, x2);
+    if(y1 > y2) swap(y1, y2);
+    return get(x2, y2) - get(x1-1, y2) - get(x2, y1-1) + get(x1-1, y1-1);
+}
+```
 
 ### Sparse Table
 
@@ -324,6 +439,20 @@ struct UnionFind {
 
 ### Ordered Set
 
+http://codeforces.com/blog/entry/11080?locale=en
+
+```c
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+
+using namespace __gnu_pbds;
+
+typedef tree<int, null_type, less<int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
+// st.find_by_order(k) - iterador para o k-ésimo menor elemento (0-indexado)
+// st.order_by_key(x) - número de elementos menores que x
+```
+
 # Grafos
 
 ### Dijkstra
@@ -363,6 +492,53 @@ int dijkstra(int orig, int dest) {
 ### Floyd-Warshall
 
 ### Pontes e Pontos de Articulação
+
+```c
+const int MAXN = 550;
+
+int d[MAXN], low[MAXN], tempo=0, raiz;
+/*
+d[u] é o tempo de descoberta de u
+low[u] é o menor d de um descendente próprio de u
+*/
+vector<int> adj[MAXN];
+vector<int> vertices_corte;
+vector<pair<int, int> > pontes;
+
+void dfs(int u, int p){
+
+    int nf = 0;
+
+    bool any = false;
+
+    d[u] = low[u] = ++tempo;
+    for(int v: adj[u]){
+
+        if(!d[v]){
+            dfs(v, u);
+            nf++;
+
+            if(low[v] >= d[u]) any = true;
+
+            low[u] = min(low[u], low[v]);
+
+            if(low[v] > d[u]){
+                // u-v é uma ponte
+                pontes.push_back({v, u});
+            }
+
+        }
+        else if(v != p){
+            low[u] = min(low[u], d[v]);
+        }
+    }
+    if( (u == raiz && nf >= 2) || (u != raiz && any) ){
+        // u é um vértice de corte
+        vertices_corte.push_back(u);
+    }
+}
+
+```
 
 ### Componentes Fortemente Conexos
 
@@ -994,8 +1170,7 @@ double angle(Point a, Point o, Point b) {
     return acos(oa.dot(ob) / (oa.dist * ob.dist));
 }
 
-//Nao considera pontos nos vertices
-//como pontos internos
+//Nao considera vertices como pontos internos
 bool PointSet::inPolygon(Point pt) {
 
     double sum = 0;
