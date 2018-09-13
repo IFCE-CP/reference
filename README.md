@@ -40,6 +40,8 @@
   - [Interseção de Retas](#interseção-de-retas)
   - [Área de polígono](#área-de-polígono)
   - [Convex Hull](#convex-hull)
+  - [Par de Pontos Mais Próximos](#par-de-pontos-mais-próximos)
+  - [Ponto Dentro do Polígono](#ponto-dentro-do-polígono)
 
 
 # Estruturas de dados
@@ -781,26 +783,16 @@ struct Line {
 
 ### Área de polígono
 
-https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/
 https://www.math10.com/en/geometry/geogebra/fullscreen.html
+https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=45
 
 ```c
 struct PointSet {
 
-private:
-    //Par de pontos mais proximos (forca bruta)
-    ppp closestByBruteForce(Point[], int);
-
-    //Par de pontos mais proximos que estao a
-    //uma distancia minima do ponto central
-    ppp closestStrip(Point[], int, double);
-
-    //Par de pontos mais proximos (Recursivo)
-    ppp closestUtil(Point[], int);
-
-public:
     vector<Point> p;
     int n;
+
+    PointSet(): n(0) {}
 
     PointSet(int n): n(n) {
         p = vector<Point>(n);
@@ -813,16 +805,23 @@ public:
     double area() {
 
         double a = 0.0;
-        int j = n - 1;
-        for (int i = 0; i < n; ++i) {
-            a += (p[j].x + p[i].x) * (p[j].y - p[i].y);
-            j = i;
-        }
+        for (int i = 1; i < p.size() - 1; ++i)
+            a += Line(p[0], p[i]).cross(Line(p[0], p[i + 1]));
         return fabs(a * 0.5);
     }
 
     //Convex Hull
     vector<Point> grahamScan();
+
+    //Par de pontos mais proximos (forca bruta)
+    ppp closestByBruteForce(Point[], int);
+
+    //Par de pontos mais proximos que estao a
+    //uma distancia minima do ponto central
+    ppp closestStrip(Point[], int, double);
+
+    //Par de pontos mais proximos (Recursivo)
+    ppp closestUtil(Point[], int);
 
     //Retorna o par de pontos mais proximos
     ppp closestPair();
@@ -841,6 +840,7 @@ public:
 ### Convex Hull
 
 https://practice.geeksforgeeks.org/problems/convex-hull/0
+https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=45
 
 ```c
 Point p0; //Vertice inicial do convex hull
@@ -848,40 +848,38 @@ Point p0; //Vertice inicial do convex hull
 //Ordena pontos no sentido anti-horario
 bool cmp(Point p1, Point p2) {
 
-    int ori = p0.orientation(p1, p2);
-    return !ori ? Line(p0, p2).dist >= Line(p0, p1).dist :
-           ori == 2;
+    double ori = Line(p0, p1).cross(Line(p0, p2));
+    return ori == 0 ? Line(p0, p1).dist < Line(p0, p2).dist :
+           atan2(p1.y - p0.y, p1.x - p0.x) < atan2(p2.y - p0.y, p2.x - p0.x);
 }
 
 //Retorna vetor de pontos do convex hull
 vector<Point> PointSet::grahamScan() {
 
     vector<Point> newP;
-    Point pMin = p[0];
     int iMin = 0;
 
     for (int i = 1; i < n; ++i)
-        if (p[i].y < pMin.y || (p[i].y == pMin.y && p[i].x < pMin.x)) {
-            pMin = p[i];
+        if (p[i].y < p[iMin].y || (p[i].y == p[iMin].y && p[i].x < p[iMin].x))
             iMin = i;
-        }
     swap(p[iMin], p[0]);
     p0 = p[0];
     newP.push_back(p0);
     sort(p.begin() + 1, p.end(), cmp);
 
     for (int i = 1; i < n; ++i) {
-        while (i < n - 1 && !p0.orientation(p[i], p[i + 1]))
+        while (i < n - 1 && fabs(Line(p0, p[i]).cross(Line(p0, p[i + 1]))) < EPS)
             i++;
         newP.push_back(p[i]);
     }
+
     vector<Point> poly(newP.size());
     if (newP.size() > 2) {
         for (int i = 0; i < 3; ++i)
             poly[i] = newP[i];
         int m = 3;
         for (int i = 3; i < newP.size(); ++i) {
-            while (poly[m - 2].orientation(poly[m - 1], newP[i]) != 2)
+            while (Line(poly[m - 2], poly[m - 1]).cross(Line(poly[m - 2], newP[i])) < EPS)
                 --m;
             poly[m++] = newP[i];
         }
@@ -892,7 +890,7 @@ vector<Point> PointSet::grahamScan() {
 ```
 
 
-### Pares Mais Próximos
+### Par de Pontos Mais Próximos
 
 https://www.urionlinejudge.com.br/judge/pt/problems/view/1295
 
@@ -984,36 +982,27 @@ double PointSet::minimumDist() {
 }
 ```
 
-###Ponto Dentro do Polígono
+### Ponto Dentro do Polígono
+
+https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=45
 
 ```c
-//Retorna o vetor ab (representado por Line)
-Line toVec(Point a, Point b) {
-    return Line({0, 0}, {b.x - a.x, b.y - a.y});
-}
-
 //Retorna o angulo aob em radianos
 double angle(Point a, Point o, Point b) {
 
-    Line oa = toVec(o, a);
-    Line ob = toVec(o, b);
+    Line oa(o, a), ob(o, b);
     return acos(oa.dot(ob) / (oa.dist * ob.dist));
 }
 
-//Nao considera pontos em vertices
+//Nao considera pontos nos vertices
 //como pontos internos
-bool PointSet::inPolygon2(Point pt) {
+bool PointSet::inPolygon(Point pt) {
 
     double sum = 0;
     int j = n - 1;
     for (int i = 0; i < n; ++i) {
-        //Descomentar para considerar pontos nos
-        //vertices como internos
-        // Line edge(p[j], p[i]);
-        // if (edge.collinear(pt) && edge.contains(pt))
-        //     return true;
         double ang = angle(p[j], pt, p[i]);
-        if (p[j].orientation(pt, p[i]) == 2)
+        if (Line(pt, p[j]).cross(Line(pt, p[i])) > 0)
             sum += ang;
         else sum -= ang;
         j = i;
