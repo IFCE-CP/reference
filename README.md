@@ -287,6 +287,31 @@ int get(int x1, int y1, int x2, int y2) {
 
 ### Sparse Table
 
+https://www.spoj.com/problems/RMQSQ/
+
+Range Minimum Query
+
+```c
+#define MAX 100100
+#define LOG_MAX 20
+
+int v[MAX];
+int table[MAX][LOG_MAX];
+
+void build(int n) {
+    for(int i = 0; i < n; ++i)
+        table[i][0] = v[i];
+    for(int i = 1; i < LOG_MAX; ++i)
+        for(int j = 0; j < MAX; ++j)
+            table[j][i] = min(table[j][i-1], table[min(n-1, j + (1 << (i-1)))][i-1]);
+}
+
+int get_min(int i, int j) {
+    int d = log2(j - i + 1); 
+    return min(table[i][d], table[j - (1 << d) + 1][d]);
+}
+```
+
 ### SQRT Decomposition
 
 https://www.urionlinejudge.com.br/judge/pt/problems/view/2800
