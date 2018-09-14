@@ -37,7 +37,7 @@
   - [Miller-Rabin + Pollard's Rho](#miller-rabin--pollards-rho)
 - [**Geometria Computacional**](#geometria-computacional)
   - [Interseção de Retas](#interseção-de-retas)
-  - [Área de polígono](#área-de-polígono)
+  - [Área de polígono](#Área-de-polígono)
   - [Convex Hull](#convex-hull)
   - [Par de Pontos Mais Próximos](#par-de-pontos-mais-próximos)
   - [Ponto Dentro do Polígono](#ponto-dentro-do-polígono)
@@ -786,6 +786,15 @@ int mdc(int a, int b, int &x, int &y) {
 ```
 
 ### Inverso Multiplicativo
+
+```c
+// m primo => invMod(a, m) = a^(m-2) (mod m)
+int invMod(int a, int m) {
+    int x, y;
+    if(mdc(a, m, x, y) != 1) return -1; // não existe inverso    
+    return (x % m + m) % m;
+}
+```
 
 ### Crivo de Erastóstenes
 
