@@ -41,6 +41,8 @@
   - [Interseção de Retas](#interseção-de-retas)
   - [Área de polígono](#área-de-polígono)
   - [Convex Hull](#convex-hull)
+  - [Par de Pontos Mais Próximos](#par-de-pontos-mais-próximos)
+  - [Ponto Dentro do Polígono](#ponto-dentro-do-polígono)
 
 
 # Estruturas de dados
@@ -285,6 +287,31 @@ int get(int x1, int y1, int x2, int y2) {
 
 ### Sparse Table
 
+https://www.spoj.com/problems/RMQSQ/
+
+Range Minimum Query
+
+```c
+#define MAX 100100
+#define LOG_MAX 20
+
+int v[MAX];
+int table[MAX][LOG_MAX];
+
+void build(int n) {
+    for(int i = 0; i < n; ++i)
+        table[i][0] = v[i];
+    for(int i = 1; i < LOG_MAX; ++i)
+        for(int j = 0; j < MAX; ++j)
+            table[j][i] = min(table[j][i-1], table[min(n-1, j + (1 << (i-1)))][i-1]);
+}
+
+int get_min(int i, int j) {
+    int d = log2(j - i + 1); 
+    return min(table[i][d], table[j - (1 << d) + 1][d]);
+}
+```
+
 ### SQRT Decomposition
 
 https://www.urionlinejudge.com.br/judge/pt/problems/view/2800
@@ -437,6 +464,20 @@ struct UnionFind {
 
 ### Ordered Set
 
+http://codeforces.com/blog/entry/11080?locale=en
+
+```c
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+
+using namespace __gnu_pbds;
+
+typedef tree<int, null_type, less<int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
+// st.find_by_order(k) - iterador para o k-ésimo menor elemento (0-indexado)
+// st.order_by_key(x) - número de elementos menores que x
+```
+
 # Grafos
 
 ### Dijkstra
@@ -508,7 +549,7 @@ void dfs(int u, int p){
 
             if(low[v] > d[u]){
                 // u-v é uma ponte
-                pontes.push_back({u, v});
+                pontes.push_back({v, u});
             }
 
         }
@@ -904,9 +945,9 @@ struct Point {
 
         double d = (p1.y - this->y) * (p2.x - p1.x) -
                    (p1.x - this->x) * (p2.y - p1.y);
-        if (d > 0) return 1; // horario
-        if (d < 0) return 2; // anti-horario
-        return 0;            // colineares
+        if (fabs(d) < EPS) return 0; // colineares
+        if (d > 0) return 1;         // horario
+        return 2;                    // anti-horario
     }
 };
 
@@ -923,17 +964,17 @@ struct Line {
         *this = Line(Point(sx, sy), Point(ex, ey));
     }
 
-    //Retorna true se p esta no segmento ou 
-    //na projecao do segmento
-    bool onSegment(Point p) {
+    //Retorna true se p e colinear com os
+    //extremos do segmento (s e)
+    bool collinear(Point p) {
         return !s.orientation(e, p);
     }
 
     //Retorna true se p esta no segmento
+    //Deve ser usado apos collinear
     bool contains(Point p) {
         
-        return onSegment(p) &&
-               fmin(s.x, e.x) <= p.x && fmax(s.x, e.x) >= p.x &&
+        return fmin(s.x, e.x) <= p.x && fmax(s.x, e.x) >= p.x &&
                fmin(s.y, e.y) <= p.y && fmax(s.y, e.y) >= p.y;
     }
 
@@ -945,24 +986,40 @@ struct Line {
         int o4 = other.s.orientation(other.e, this->e);
 
         return (o1 != o2 && o3 != o4)  ||
-               this->contains(other.s) ||
-               this->contains(other.e) ||
-               other.contains(this->s) ||
-               other.contains(this->e);
+               (!o1 && this->contains(other.s)) ||
+               (!o2 && this->contains(other.e)) ||
+               (!o3 && other.contains(this->s)) ||
+               (!o4 && other.contains(this->e));
+    }
+
+    //Produto escalar
+    double dot(Line other) {
+        
+        return (this->e.x - this->s.x) * (other.e.x - other.s.x) +
+               (this->e.y - this->s.y) * (other.e.y - other.s.y);
+    }
+
+    //Produto vetorial
+    double cross(Line other) {
+
+        return (this->e.x - this->s.x) * (other.e.y - other.s.y) -
+               (this->e.y - this->s.y) * (other.e.x - other.s.x);
     }
 };
 ```
 
 ### Área de polígono
 
-https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/
 https://www.math10.com/en/geometry/geogebra/fullscreen.html
+https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=45
 
 ```c
 struct PointSet {
 
     vector<Point> p;
     int n;
+
+    PointSet(): n(0) {}
 
     PointSet(int n): n(n) {
         p = vector<Point>(n);
@@ -975,16 +1032,34 @@ struct PointSet {
     double area() {
 
         double a = 0.0;
-        int j = n - 1;
-        for (int i = 0; i < n; ++i) {
-            a += (p[j].x + p[i].x) * (p[j].y - p[i].y);
-            j = i;
-        }
+        for (int i = 1; i < p.size() - 1; ++i)
+            a += Line(p[0], p[i]).cross(Line(p[0], p[i + 1]));
         return fabs(a * 0.5);
     }
 
     //Convex Hull
     vector<Point> grahamScan();
+
+    //Par de pontos mais proximos (forca bruta)
+    ppp closestByBruteForce(Point[], int);
+
+    //Par de pontos mais proximos que estao a
+    //uma distancia minima do ponto central
+    ppp closestStrip(Point[], int, double);
+
+    //Par de pontos mais proximos (Recursivo)
+    ppp closestUtil(Point[], int);
+
+    //Retorna o par de pontos mais proximos
+    ppp closestPair();
+
+    //Retorna a distancia entre os pontos
+    //mais proximos
+    double minimumDist();
+
+    //Retorna verdadeiro se o ponto esta dentro
+    //do poligono representado pelo Pointset
+    bool inPolygon(Point);
 };
 ```
 
@@ -992,6 +1067,7 @@ struct PointSet {
 ### Convex Hull
 
 https://practice.geeksforgeeks.org/problems/convex-hull/0
+https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=45
 
 ```c
 Point p0; //Vertice inicial do convex hull
@@ -999,45 +1075,164 @@ Point p0; //Vertice inicial do convex hull
 //Ordena pontos no sentido anti-horario
 bool cmp(Point p1, Point p2) {
 
-    int ori = p0.orientation(p1, p2);
-    return !ori ? Line(p0, p2).dist >= Line(p0, p1).dist :
-           ori == 2;
+    double ori = Line(p0, p1).cross(Line(p0, p2));
+    return ori == 0 ? Line(p0, p1).dist < Line(p0, p2).dist :
+           atan2(p1.y - p0.y, p1.x - p0.x) < atan2(p2.y - p0.y, p2.x - p0.x);
 }
 
 //Retorna vetor de pontos do convex hull
 vector<Point> PointSet::grahamScan() {
 
     vector<Point> newP;
-    Point pMin = p[0];
     int iMin = 0;
 
     for (int i = 1; i < n; ++i)
-        if (p[i].y < pMin.y || (p[i].y == pMin.y && p[i].x < pMin.x)) {
-            pMin = p[i];
+        if (p[i].y < p[iMin].y || (p[i].y == p[iMin].y && p[i].x < p[iMin].x))
             iMin = i;
-        }
     swap(p[iMin], p[0]);
     p0 = p[0];
     newP.push_back(p0);
     sort(p.begin() + 1, p.end(), cmp);
 
     for (int i = 1; i < n; ++i) {
-        while (i < n - 1 && !p0.orientation(p[i], p[i + 1]))
+        while (i < n - 1 && fabs(Line(p0, p[i]).cross(Line(p0, p[i + 1]))) < EPS)
             i++;
         newP.push_back(p[i]);
     }
+
     vector<Point> poly(newP.size());
     if (newP.size() > 2) {
         for (int i = 0; i < 3; ++i)
             poly[i] = newP[i];
         int m = 3;
         for (int i = 3; i < newP.size(); ++i) {
-            while (poly[m - 2].orientation(poly[m - 1], newP[i]) != 2)
+            while (Line(poly[m - 2], poly[m - 1]).cross(Line(poly[m - 2], newP[i])) < EPS)
                 --m;
             poly[m++] = newP[i];
         }
         poly.resize(m);
     }
     return poly;
+}
+```
+
+
+### Par de Pontos Mais Próximos
+
+https://www.urionlinejudge.com.br/judge/pt/problems/view/1295
+
+```c
+typedef pair<Point, Point> ppp;
+
+//Ordena pontos pelo x
+bool cmpX(Point p1, Point p2) {
+    return p1.x < p2.x;
+}
+
+//Ordena pontos pelo y
+bool cmpY(Point p1, Point p2) {
+    return p1.y < p2.y;
+}
+
+ppp PointSet::closestStrip(Point strip[], int m, double minD) {
+
+    ppp res = {{-INF, -INF}, {INF, INF}};
+    for (int i = 0; i < m - 1; ++i)
+        for (int j = i + 1; j < m && strip[j].y - strip[i].y < minD; ++j)
+            if (Line(strip[i], strip[j]).dist < minD) {
+                minD = Line(strip[i], strip[j]).dist;
+                res = {strip[i], strip[j]};
+            }
+    return res;
+}
+
+ppp PointSet::closestByBruteForce(Point vp[], int sz) {
+
+    ppp res = {{-INF, -INF}, {INF, INF}};
+    for (int i = 0; i < sz - 1; ++i)
+        for (int j = i + 1; j < sz; ++j)
+            if (Line(vp[i], vp[j]).dist < Line(res.first, res.second).dist)
+                res = {vp[i], vp[j]};
+    return res;
+}
+
+ppp PointSet::closestUtil(Point px[], int sz) {
+
+    if (sz < 4)
+        return closestByBruteForce(px, sz);
+
+    int mid = (sz - 1) / 2, l = 0, r = 0;
+    Point midP = px[mid];
+    Point pxl[sz], pxr[sz];
+    ppp res;
+
+    for(int i = 0; i < sz; i++) {
+        if(px[i].x < midP.x || (px[i].x == midP.x && r > l))
+            pxl[l++] = px[i];
+        else
+            pxr[r++] = px[i];
+    }
+    ppp pl = closestUtil(pxl, l);
+    ppp pr = closestUtil(pxr, r);
+    double plDist = Line(pl.first, pl.second).dist;
+    double prDist = Line(pr.first, pr.second).dist;
+    double d = fmin(plDist, prDist);
+    res = plDist < prDist ? pl : pr;
+
+    sort(px, px + sz, cmpY);
+
+    Point strip[sz];
+    int m = 0;
+    for (int i = 0; i < sz; ++i)
+        if (fabs(px[i].x - midP.x) < d)
+            strip[m++] = px[i];
+
+    ppp spDist = closestStrip(strip, m, d);
+    if (Line(spDist.first, spDist.second).dist < d)
+        return spDist;
+    return res;
+}
+
+ppp PointSet::closestPair() {
+
+    Point px[n];
+    for (int i = 0; i < n; ++i) px[i] = p[i];
+    sort(px, px + n, cmpX);
+    return closestUtil(px, n);
+}
+
+double PointSet::minimumDist() {
+
+    if (n < 2) return INF;
+    ppp close = closestPair();
+    return Line(close.first, close.second).dist;
+}
+```
+
+### Ponto Dentro do Polígono
+
+https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=45
+
+```c
+//Retorna o angulo aob em radianos
+double angle(Point a, Point o, Point b) {
+
+    Line oa(o, a), ob(o, b);
+    return acos(oa.dot(ob) / (oa.dist * ob.dist));
+}
+
+//Nao considera vertices como pontos internos
+bool PointSet::inPolygon(Point pt) {
+
+    double sum = 0;
+    int j = n - 1;
+    for (int i = 0; i < n; ++i) {
+        double ang = angle(p[j], pt, p[i]);
+        if (Line(pt, p[j]).cross(Line(pt, p[i])) > 0)
+            sum += ang;
+        else sum -= ang;
+        j = i;
+    }
+    return fabs(fabs(sum) - 2 * M_PI) < EPS;
 }
 ```
