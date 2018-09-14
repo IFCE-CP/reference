@@ -4,8 +4,6 @@
   - [Segment Tree](#segment-tree)
     - [Point update](#point-update)
     - [Lazy propagation](#lazy-propagation)
-    - [Persistent](#persistent)
-    - [Segment Tree 2D](#segment-tree-2d)
   - [Fenwick Tree / BIT](#bit)
     - [BIT 2D](#bit-2d)
   - [Sparse Table](#sparse-table)
@@ -207,10 +205,6 @@ struct SegmentTree {
     }
 };
 ```
-
-#### Persistent
-
-#### Segment Tree 2D
 
 ### BIT
 
