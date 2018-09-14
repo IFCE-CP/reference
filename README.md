@@ -988,80 +988,62 @@ void factors(ll n, vector<ll> &ans) {
 
 ### Interseção de Retas
 
-https://practice.geeksforgeeks.org/problems/check-if-two-line-segments-intersect/0
+https://uva.onlinejudge.org/index.php?option=onlinejudge&page=show_problem&problem=314
 
 ```c
+#define EPS 1e-9
+#define same(x, y) (fabs(x - y) < EPS)
+#define inRange(a, b, c) (c >= fmin(a, b) - EPS && c <= fmax(a, b) + EPS)
+
 struct Point {
     
     double x, y;
 
     Point(double x = 0, double y = 0): x(x), y(y) {}
-
-    int orientation(Point p1, Point p2) {
-
-        double d = (p1.y - this->y) * (p2.x - p1.x) -
-                   (p1.x - this->x) * (p2.y - p1.y);
-        if (fabs(d) < EPS) return 0; // colineares
-        if (d > 0) return 1;         // horario
-        return 2;                    // anti-horario
-    }
 };
 
-struct Line {
+double dist(Point a, Point b) {
+    return hypot(fabs(b.x - a.x), fabs(b.y - a.y));
+}
 
-    Point s, e;
-    double dist;
+struct Line { double a, b, c; };
 
-    Line(Point s, Point e): s(s), e(e) {
-        dist = hypot(fabs(e.x - s.x), fabs(e.y - s.y));
+Line pointsToLine(Point p1, Point p2) {
+
+    Line l;
+    if (same(p1.x, p2.x)) {
+        l.a = 1.0;
+        l.b = 0.0;
+        l.c = -p1.x;
+    } else {
+        l.a = -(p1.y - p2.y) / (p1.x - p2.x);
+        l.b = 1.0;
+        l.c = -(l.a * p1.x) - p1.y;
     }
+    return l;
+}
 
-    Line(double sx = 0, double sy = 0, double ex = 0, double ey = 0) {
-        *this = Line(Point(sx, sy), Point(ex, ey));
-    }
+bool parallel(Line l1, Line l2) {
+    return same(l1.a, l2.a) && same(l1.b, l2.b);
+}
 
-    //Retorna true se p e colinear com os
-    //extremos do segmento (s e)
-    bool collinear(Point p) {
-        return !s.orientation(e, p);
-    }
+bool sameLine(Line l1, Line l2) {
+    return parallel(l1, l2) && same(l1.c, l2.c);
+}
 
-    //Retorna true se p esta no segmento
-    //Deve ser usado apos collinear
-    bool contains(Point p) {
-        
-        return fmin(s.x, e.x) <= p.x && fmax(s.x, e.x) >= p.x &&
-               fmin(s.y, e.y) <= p.y && fmax(s.y, e.y) >= p.y;
-    }
+bool intersect(Line l1, Line l2) {
+    return !parallel(l1, l2);
+}
 
-    bool intersect(Line other) {
+Point pointIntersection(Line l1, Line l2) {
 
-        int o1 = this->s.orientation(this->e, other.s);
-        int o2 = this->s.orientation(this->e, other.e);
-        int o3 = other.s.orientation(other.e, this->s);
-        int o4 = other.s.orientation(other.e, this->e);
-
-        return (o1 != o2 && o3 != o4)  ||
-               (!o1 && this->contains(other.s)) ||
-               (!o2 && this->contains(other.e)) ||
-               (!o3 && other.contains(this->s)) ||
-               (!o4 && other.contains(this->e));
-    }
-
-    //Produto escalar
-    double dot(Line other) {
-        
-        return (this->e.x - this->s.x) * (other.e.x - other.s.x) +
-               (this->e.y - this->s.y) * (other.e.y - other.s.y);
-    }
-
-    //Produto vetorial
-    double cross(Line other) {
-
-        return (this->e.x - this->s.x) * (other.e.y - other.s.y) -
-               (this->e.y - this->s.y) * (other.e.x - other.s.x);
-    }
-};
+    Point p;
+    p.x = (l2.b * l1.c - l1.b * l2.c) / (l2.a * l1.b - l1.a * l2.b);
+    if (same(l1.b, 0))
+        p.y = -(l2.a * p.x + l2.c);
+    else p.y = -(l1.a * p.x + l1.c);
+    return p;
+}
 ```
 
 ### Área de polígono
