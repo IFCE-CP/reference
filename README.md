@@ -517,6 +517,23 @@ int dijkstra(int orig, int dest) {
 
 ### Floyd-Warshall
 
+https://practice.geeksforgeeks.org/problems/implementing-floyd-warshall/0
+
+```c
+int g[MAX][MAX]; // g[i][i] = INF
+int dist[MAX][MAX];
+
+void floyd(int n) {
+    for(int i = 0; i < n; ++i)
+        for(int j = 0; j < n; ++j)
+            dist[i][j] = g[i][j];
+    for(int k = 0; k < n; ++k)
+        for(int i = 0; i < n; ++i)
+            for(int j = 0; j < n; ++j)
+                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+}
+```
+
 ### Pontes e Pontos de Articulação
 
 ```c
