@@ -1044,6 +1044,45 @@ Point pointIntersection(Line l1, Line l2) {
     else p.y = -(l1.a * p.x + l1.c);
     return p;
 }
+
+//Retorna a distancia de p para a reta que contem ab
+double distToLine(Point a, Point b, Point p) {
+
+    Vec ap = toVec(a, p), ab = toVec(a, b);
+    double u = dot(ap, ab) / norm_sq(ab);
+    a = translate(a, scale(ab, u));
+    return dist(p, a);
+}
+```
+
+### Operações com Vetores
+
+```c
+typedef Point Vec;
+
+Vec toVec(Point a, Point b) { return Vec(b.x - a.x, b.y - a.y); }
+
+//Produto escalar
+double dot(Vec a, Vec b) { return a.x * b.x + a.y * b.y; }
+
+//Produto vetorial
+double cross(Vec a, Vec b) { return a.x * b.y - a.y * b.x; }
+
+Point translate(Point p, Vec v) { return Point(p.x + v.x, p.y + v.y); }
+
+Vec scale(Vec v, double u) { return Vec(v.x * u, v.y * u); }
+
+//Norma(modulo) do vetor ao quadrado
+double norm_sq(Vec v) { return v.x * v.x + v.y * v.y; }
+
+//Orientacao anti-horaria
+bool ccw(Point a, Point b, Point c) {
+    return cross(toVec(a, b), toVec(a, c)) > 0;
+}
+
+bool collinear(Point a, Point b, Point c) {
+    return same(cross(toVec(a, b), toVec(a, c)), 0);
+}
 ```
 
 ### Área de polígono
