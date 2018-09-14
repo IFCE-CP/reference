@@ -1201,39 +1201,33 @@ https://www.urionlinejudge.com.br/judge/pt/problems/view/1295
 ```c
 typedef pair<Point, Point> ppp;
 
-//Ordena pontos pelo x
-bool cmpX(Point p1, Point p2) {
-    return p1.x < p2.x;
-}
+bool cmpX(Point p1, Point p2) { return p1.x < p2.x; }
 
-//Ordena pontos pelo y
-bool cmpY(Point p1, Point p2) {
-    return p1.y < p2.y;
-}
+bool cmpY(Point p1, Point p2) { return p1.y < p2.y; }
 
-ppp PointSet::closestStrip(Point strip[], int m, double minD) {
+ppp closestStrip(Point strip[], int m, double minD) {
 
     ppp res = {{-INF, -INF}, {INF, INF}};
     for (int i = 0; i < m - 1; ++i)
         for (int j = i + 1; j < m && strip[j].y - strip[i].y < minD; ++j)
-            if (Line(strip[i], strip[j]).dist < minD) {
-                minD = Line(strip[i], strip[j]).dist;
-                res = {strip[i], strip[j]};
+            if (dist(strip[i], strip[j]) < minD) {
+                minD = dist(strip[i], strip[j]);
+                res = { strip[i], strip[j] };
             }
     return res;
 }
 
-ppp PointSet::closestByBruteForce(Point vp[], int sz) {
+ppp closestByBruteForce(Point vp[], int sz) {
 
     ppp res = {{-INF, -INF}, {INF, INF}};
     for (int i = 0; i < sz - 1; ++i)
         for (int j = i + 1; j < sz; ++j)
-            if (Line(vp[i], vp[j]).dist < Line(res.first, res.second).dist)
+            if (dist(vp[i], vp[j]) < dist(res.first, res.second))
                 res = {vp[i], vp[j]};
     return res;
 }
 
-ppp PointSet::closestUtil(Point px[], int sz) {
+ppp closestUtil(Point px[], int sz) {
 
     if (sz < 4)
         return closestByBruteForce(px, sz);
@@ -1251,8 +1245,8 @@ ppp PointSet::closestUtil(Point px[], int sz) {
     }
     ppp pl = closestUtil(pxl, l);
     ppp pr = closestUtil(pxr, r);
-    double plDist = Line(pl.first, pl.second).dist;
-    double prDist = Line(pr.first, pr.second).dist;
+    double plDist = dist(pl.first, pl.second);
+    double prDist = dist(pr.first, pr.second);
     double d = fmin(plDist, prDist);
     res = plDist < prDist ? pl : pr;
 
@@ -1265,24 +1259,24 @@ ppp PointSet::closestUtil(Point px[], int sz) {
             strip[m++] = px[i];
 
     ppp spDist = closestStrip(strip, m, d);
-    if (Line(spDist.first, spDist.second).dist < d)
+    if (dist(spDist.first, spDist.second) < d)
         return spDist;
     return res;
 }
 
-ppp PointSet::closestPair() {
+ppp closestPair(vector<Point>& ps, int n) {
 
     Point px[n];
-    for (int i = 0; i < n; ++i) px[i] = p[i];
+    for (int i = 0; i < n; ++i) px[i] = ps[i];
     sort(px, px + n, cmpX);
     return closestUtil(px, n);
 }
 
-double PointSet::minimumDist() {
+double minimumDist(vector<Point>& ps) {
 
-    if (n < 2) return INF;
-    ppp close = closestPair();
-    return Line(close.first, close.second).dist;
+    if (ps.size() < 3) return INF;
+    ppp close = closestPair(ps, ps.size());
+    return dist(close.first, close.second);
 }
 ```
 
@@ -1293,23 +1287,23 @@ https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_
 ```c
 //Retorna o angulo aob em radianos
 double angle(Point a, Point o, Point b) {
-
-    Line oa(o, a), ob(o, b);
-    return acos(oa.dot(ob) / (oa.dist * ob.dist));
+    return acos(dot(toVec(o, a), toVec(o, b)) / (dist(o, a) * dist(o, b)));
 }
 
-//Nao considera vertices como pontos internos
-bool PointSet::inPolygon(Point pt) {
+//Nao considera pontos nos vertices
+//como pontos internos
+bool inPolygon(vector<Point>& p, Point pt) {
 
+    if (p.size() < 3) return false;
     double sum = 0;
-    int j = n - 1;
-    for (int i = 0; i < n; ++i) {
+    int j = p.size() - 1;
+    for (int i = 0; i < p.size(); ++i) {
         double ang = angle(p[j], pt, p[i]);
-        if (Line(pt, p[j]).cross(Line(pt, p[i])) > 0)
+        if (ccw(pt, p[j], p[i]))
             sum += ang;
         else sum -= ang;
         j = i;
     }
-    return fabs(fabs(sum) - 2 * M_PI) < EPS;
+    return same(fabs(sum) - 2 * M_PI, 0);
 }
 ```
