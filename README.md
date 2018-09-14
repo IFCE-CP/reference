@@ -37,7 +37,10 @@
   - [Miller-Rabin + Pollard's Rho](#miller-rabin--pollards-rho)
 - [**Geometria Computacional**](#geometria-computacional)
   - [Interseção de Retas](#interseção-de-retas)
-  - [Área de polígono](#Área-de-polígono)
+  - [Outras Operações com Ponto e Reta](#outras-operações-com-ponto-e-reta)
+  - [Operações com Vetores](#operações-com-vetores)
+  - [Interseção de Segmentos](#interseção-de-segmentos)
+  - [Área de Polígono](#área-de-polígono)
   - [Convex Hull](#convex-hull)
   - [Par de Pontos Mais Próximos](#par-de-pontos-mais-próximos)
   - [Ponto Dentro do Polígono](#ponto-dentro-do-polígono)
@@ -1002,10 +1005,6 @@ struct Point {
     Point(double x = 0, double y = 0): x(x), y(y) {}
 };
 
-double dist(Point a, Point b) {
-    return hypot(fabs(b.x - a.x), fabs(b.y - a.y));
-}
-
 struct Line { double a, b, c; };
 
 Line pointsToLine(Point p1, Point p2) {
@@ -1044,6 +1043,16 @@ Point pointIntersection(Line l1, Line l2) {
     else p.y = -(l1.a * p.x + l1.c);
     return p;
 }
+```
+
+
+### Outras Operações com Ponto e Reta
+
+```c
+//Distancia entre os pontos a e b
+double dist(Point a, Point b) {
+    return hypot(fabs(b.x - a.x), fabs(b.y - a.y));
+}
 
 //Retorna a distancia de p para a reta que contem ab
 double distToLine(Point a, Point b, Point p) {
@@ -1053,7 +1062,19 @@ double distToLine(Point a, Point b, Point p) {
     a = translate(a, scale(ab, u));
     return dist(p, a);
 }
+
+double toRad(double t) { return t * M_PI / 180.0; }
+double toDeg(double t) { return t * 180.0 / M_PI; }
+
+// Rotaciona p em theta graus anti-horario
+Point rotate(Point p, double theta) {
+
+    double rad = toRad(theta);
+    return Point(p.x * cos(rad) - p.y * sin(rad),
+                 p.x * sin(rad) + p.y * cos(rad));
+}
 ```
+
 
 ### Operações com Vetores
 
@@ -1126,6 +1147,7 @@ struct Segment {
 };
 ```
 
+
 ### Área de Polígono
 
 https://www.math10.com/en/geometry/geogebra/fullscreen.html
@@ -1140,6 +1162,7 @@ double area(const vector<Point>& p) {
     return fabs(a * 0.5);
 }
 ```
+
 
 ### Convex Hull
 
@@ -1192,6 +1215,7 @@ vector<Point> grahamScan(vector<Point>& p) {
     return poly;
 }
 ```
+
 
 
 ### Par de Pontos Mais Próximos
