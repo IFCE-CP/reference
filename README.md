@@ -758,7 +758,7 @@ int mdc(int a, int b) {
 }
 
 int mmc(int a, int b) {
-    return a * b / mdc(a, b);
+    return a / mdc(a, b) * b;
 }
 ```
 
@@ -868,7 +868,6 @@ void build_phi() {
         }
 }
 ```
-
 
 ### Exponenciação de Matrizes
 
