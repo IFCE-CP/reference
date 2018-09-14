@@ -552,6 +552,32 @@ void bfs(vector<int> &ans){
 ```
 
 ### MST
+https://www.urionlinejudge.com.br/judge/pt/problems/view/2404
+```c
+struct Aresta{
+	int u, v, peso;
+};
+
+bool comp(Aresta a, Aresta b){
+	return a.peso < b.peso;
+}
+
+int kruskal(vector<Aresta> &arestas){
+	
+	sort(arestas.begin(), arestas.end(), comp);
+	int soma = 0;
+	for(Aresta aresta: arestas){
+		int v = _find(aresta.v);
+		int u = _find(aresta.u);
+		int peso = aresta.peso;
+		if(v != u){
+			soma += peso;
+			_union(v, u);
+		}
+	}
+	return soma;
+}
+```
 
 ### Lowest Common Ancestor
 
