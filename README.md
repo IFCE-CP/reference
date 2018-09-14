@@ -1085,61 +1085,21 @@ bool collinear(Point a, Point b, Point c) {
 }
 ```
 
+
 ### Área de polígono
 
 https://www.math10.com/en/geometry/geogebra/fullscreen.html
 https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=45
 
 ```c
-struct PointSet {
+double area(const vector<Point>& p) {
 
-    vector<Point> p;
-    int n;
-
-    PointSet(): n(0) {}
-
-    PointSet(int n): n(n) {
-        p = vector<Point>(n);
-    }
-
-    PointSet(vector<Point> points): p(points) {
-        n = p.size();
-    }
-
-    double area() {
-
-        double a = 0.0;
-        for (int i = 1; i < p.size() - 1; ++i)
-            a += Line(p[0], p[i]).cross(Line(p[0], p[i + 1]));
-        return fabs(a * 0.5);
-    }
-
-    //Convex Hull
-    vector<Point> grahamScan();
-
-    //Par de pontos mais proximos (forca bruta)
-    ppp closestByBruteForce(Point[], int);
-
-    //Par de pontos mais proximos que estao a
-    //uma distancia minima do ponto central
-    ppp closestStrip(Point[], int, double);
-
-    //Par de pontos mais proximos (Recursivo)
-    ppp closestUtil(Point[], int);
-
-    //Retorna o par de pontos mais proximos
-    ppp closestPair();
-
-    //Retorna a distancia entre os pontos
-    //mais proximos
-    double minimumDist();
-
-    //Retorna verdadeiro se o ponto esta dentro
-    //do poligono representado pelo Pointset
-    bool inPolygon(Point);
-};
+    double a = 0.0;
+    for (int i = 1; i < p.size() - 1; ++i)
+        a += cross(toVec(p[0], p[i]), toVec(p[0], p[i + 1]));
+    return fabs(a * 0.5);
+}
 ```
-
 
 ### Convex Hull
 
