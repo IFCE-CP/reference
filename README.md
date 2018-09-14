@@ -567,6 +567,46 @@ void dfs(int u, int p){
 
 ### Componentes Fortemente Conexos
 
+```c
+
+int  d[MAX], low[MAX], tempo, pilha[MAX], topo=-1, cont=0, comp[MAX];
+lli memo[MAX];
+
+vector<int> g[MAX];
+
+void dfs(int u)
+{
+	pilha[++topo] = u;
+	low[u] = d[u] = ++tempo;
+
+	for(int i = 0; i < (int)g[u].size(); i++)
+	{
+		int v = g[u][i];
+
+		if(!d[v])
+		{
+			dfs(v);
+			low[u] = min(low[u], low[v]); 
+		}
+		else 
+			low[u] = min(low[u], d[v]);
+	}
+
+	if(d[u] == low[u])
+	{
+		int x;
+		++cont;
+		do
+		{
+			x = pilha[topo--];
+			comp[x] = cont;
+			d[x] = 5*MAX; //equivalente a d[x] = INF
+		}while(x != u);
+	}
+}
+
+```
+
 ### Ordenação Topológica
 
 https://olimpiada.ic.unicamp.br/pratique/p2/2011/f2/escalona/
