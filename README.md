@@ -1152,16 +1152,16 @@ Point p0; //Vertice inicial do convex hull
 //Ordena pontos no sentido anti-horario
 bool cmp(Point p1, Point p2) {
 
-    double ori = Line(p0, p1).cross(Line(p0, p2));
-    return ori == 0 ? Line(p0, p1).dist < Line(p0, p2).dist :
+    double ori = cross(toVec(p0, p1), toVec(p0, p2));
+    return same(ori, 0) ? dist(p0, p1) < dist(p0, p2):
            atan2(p1.y - p0.y, p1.x - p0.x) < atan2(p2.y - p0.y, p2.x - p0.x);
 }
 
 //Retorna vetor de pontos do convex hull
-vector<Point> PointSet::grahamScan() {
+vector<Point> grahamScan(vector<Point>& p) {
 
     vector<Point> newP;
-    int iMin = 0;
+    int iMin = 0, n = p.size();
 
     for (int i = 1; i < n; ++i)
         if (p[i].y < p[iMin].y || (p[i].y == p[iMin].y && p[i].x < p[iMin].x))
@@ -1172,7 +1172,7 @@ vector<Point> PointSet::grahamScan() {
     sort(p.begin() + 1, p.end(), cmp);
 
     for (int i = 1; i < n; ++i) {
-        while (i < n - 1 && fabs(Line(p0, p[i]).cross(Line(p0, p[i + 1]))) < EPS)
+        while (i < n - 1 && same(cross(toVec(p0, p[i]), toVec(p0, p[i + 1])), 0))
             i++;
         newP.push_back(p[i]);
     }
@@ -1183,7 +1183,7 @@ vector<Point> PointSet::grahamScan() {
             poly[i] = newP[i];
         int m = 3;
         for (int i = 3; i < newP.size(); ++i) {
-            while (Line(poly[m - 2], poly[m - 1]).cross(Line(poly[m - 2], newP[i])) < EPS)
+            while (cross(toVec(poly[m - 2], poly[m - 1]), toVec(poly[m - 2], newP[i])) < EPS)
                 --m;
             poly[m++] = newP[i];
         }
