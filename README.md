@@ -20,7 +20,7 @@
   - [Pontes e Pontos de Articulação](#pontes-e-pontos-de-articulação)
   - [Componentes Fortemente Conexos](#componentes-fortemente-conexos)
   - [Ordenação Topológica](#ordenação-topológica)
-  - [MST](#mst)
+  - [Minimum Spanning Tree](#minimum-spanning-tree)
   - [Lowest Common Ancestor](#lowest-common-ancestor)
   - [Bipartite Matching](#bipartite-matching)
   - [Fluxo](#fluxo)
@@ -633,31 +633,34 @@ void bfs(vector<int> &ans){
 }
 ```
 
-### MST
+### Minimum Spanning Tree
+
 https://www.urionlinejudge.com.br/judge/pt/problems/view/2404
+
 ```c
-struct Aresta{
-	int u, v, peso;
+struct Aresta {
+    int u, v, peso;
 };
 
-bool comp(Aresta a, Aresta b){
-	return a.peso < b.peso;
+bool comp(Aresta a, Aresta b) {
+    return a.peso < b.peso;
 }
 
-int kruskal(vector<Aresta> &arestas){
-	
-	sort(arestas.begin(), arestas.end(), comp);
-	int soma = 0;
-	for(Aresta aresta: arestas){
-		int v = _find(aresta.v);
-		int u = _find(aresta.u);
-		int peso = aresta.peso;
-		if(v != u){
-			soma += peso;
-			_union(v, u);
-		}
-	}
-	return soma;
+int kruskal(vector<Aresta> &arestas, int n) {
+
+    sort(arestas.begin(), arestas.end(), comp);
+    int soma = 0;
+    UnionFind uf(n);
+    for(Aresta aresta: arestas) {
+        int v = uf.find(aresta.v);
+        int u = uf.find(aresta.u);
+        int peso = aresta.peso;
+        if(v != u) {
+            soma += peso;
+            uf.uni(v, u);
+        }
+    }
+    return soma;
 }
 ```
 
