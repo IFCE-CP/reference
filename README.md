@@ -1086,7 +1086,47 @@ bool collinear(Point a, Point b, Point c) {
 ```
 
 
-### Área de polígono
+### Interseção de Segmentos
+
+https://uva.onlinejudge.org/index.php?option=onlinejudge&page=show_problem&problem=127
+
+```c
+struct Segment {
+
+    Point s, e;
+    double dist;
+
+    Segment(Point s, Point e): s(s), e(e) {
+        dist = hypot(fabs(e.x - s.x), fabs(e.y - s.y));
+    }
+
+    Segment(double sx = 0, double sy = 0, double ex = 0, double ey = 0) {
+        *this = Segment(Point(sx, sy), Point(ex, ey));
+    }
+
+    //Retorna true se p esta no segmento
+    //Deve ser usado apos collinear
+    bool contains(Point p) {
+        return inRange(s.x, e.x, p.x) && inRange(s.y, e.y, p.y);
+    }
+
+    bool intersect(Segment seg) {
+
+        bool o1 = ccw(s, e, seg.s);
+        bool o2 = ccw(s, e, seg.e);
+        bool o3 = ccw(seg.s, seg.e, s);
+        bool o4 = ccw(seg.s, seg.e, e);
+
+        return (o1 != o2 && o3 != o4) ||
+               (collinear(s, e, seg.s) && contains(seg.s)) ||
+               (collinear(s, e, seg.e) && contains(seg.e)) ||
+               (collinear(seg.s, seg.e, s) && seg.contains(s)) ||
+               (collinear(seg.s, seg.e, e) && seg.contains(e));
+    }
+};
+```
+
+### Área de Polígono
 
 https://www.math10.com/en/geometry/geogebra/fullscreen.html
 https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=45
