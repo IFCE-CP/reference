@@ -512,6 +512,8 @@ int dijkstra(int orig, int dest) {
 
 ### Bellman-Ford
 
+https://practice.geeksforgeeks.org/problems/negative-weight-cycle/0
+
 ```c
 #define INF 0x3f3f3f3f
 
@@ -625,7 +627,7 @@ void dfs(int u) {
     low[u] = d[u] = ++tempo;
 
     for(int i = 0; i < (int)g[u].size(); i++) {
-		int v = g[u][i];
+        int v = g[u][i];
         if(!d[v]) {
             dfs(v);
             low[u] = min(low[u], low[v]); 
