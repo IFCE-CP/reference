@@ -512,6 +512,37 @@ int dijkstra(int orig, int dest) {
 
 ### Bellman-Ford
 
+```c
+#define INF 0x3f3f3f3f
+
+struct Edge { int u, v, w; } edges[MAXM];
+
+int n, m, d[MAXN];
+
+// retorna true se não houver ciclo negativo
+bool bellman_ford(int s) {
+
+    memset(d, 0x3f, sizeof d);
+    d[s] = 0;
+    bool ok = true; // indica se relaxou alguma aresta
+    for(int k = 0; k < n-1 && ok; ++k) {
+        ok = false;
+        for(int i = 0; i < m; ++i) {
+            auto e = edges[i];
+            if(d[e.v] > d[e.u] + e.w)
+                d[e.v] = d[e.u] + e.w, ok = true;
+        }
+    }
+
+    for(int i = 0; i < m; ++i) {
+        auto e = edges[i];
+        if(d[e.v] > d[e.u] + e.w)
+            return false;
+    }
+    return true;
+}
+```
+
 ### Floyd-Warshall
 
 https://practice.geeksforgeeks.org/problems/implementing-floyd-warshall/0
