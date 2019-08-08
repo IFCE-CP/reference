@@ -21,7 +21,8 @@
   - [Minimum Spanning Tree](#minimum-spanning-tree)
   - [Lowest Common Ancestor](#lowest-common-ancestor)
   - [Bipartite Matching](#bipartite-matching)
-  - [Fluxo](#fluxo)
+  - [Fluxo Máximo](#fluxo-máximo)
+    - [Edmons-Karp](#edmons-karp)
 - [**Strings**](#strings)
   - [KMP](#kmp)
   - [Z Function](#z-function)
@@ -751,7 +752,54 @@ int lca(int u, int v) {
 
 ### Bipartite Matching
 
-### Fluxo
+### Fluxo Máximo
+
+#### Edmons-Karp
+
+https://practice.geeksforgeeks.org/problems/find-the-maximum-flow/0
+
+```c
+int n, g[MAXN][MAXN], gr[MAXN][MAXN], f[MAXN][MAXN], p[MAXN];
+
+void bfs(int s, int t) {
+    
+    queue<int> q;
+    memset(p, -1, sizeof p);
+    q.push(s);
+    while(!q.empty() && p[t] == -1) {
+        int u = q.front(); q.pop();
+        for(int v = 0; v < n; ++v)
+            if(gr[u][v] && p[v] == -1)
+                q.push(v), p[v] = u;
+    }
+}
+
+int edmons_karp(int s, int t) {
+    
+    memset(f, 0, sizeof f);
+    memcpy(gr, g, sizeof gr);
+    
+    for(bfs(s, t); p[t] != -1; bfs(s, t)) {
+        
+        int mn = INT_MAX;
+        for(int v = t; v != s; v = p[v])
+            mn = min(mn, gr[p[v]][v]);
+        
+        for(int v = t; v != s; v = p[v]) {
+            int u = p[v];
+            gr[u][v] -= mn;
+            gr[v][u] += mn;
+            if(g[u][v] > 0) f[u][v] += mn;
+            else f[v][u] -= mn;
+        }
+    }
+    
+    int ans = 0;
+    for(int i = 0; i < n; ++i)
+        ans += f[s][i] - f[i][s];
+    return ans;
+}
+```
 
 # Strings
 
