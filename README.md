@@ -805,6 +805,33 @@ int edmons_karp(int s, int t) {
 
 ### KMP
 
+https://www.urionlinejudge.com.br/judge/pt/problems/view/2651
+
+```c
+int lps[MAXM];
+
+void kmppp(string& p) {
+    int i = 0, j = -1;
+    lps[0] = -1;
+    while(i < p.size()) {
+        while(j >= 0 && p[i] != p[j]) j = lps[j];
+        i++, j++;
+        lps[i] = j;
+    }
+}
+
+int kmp(string& p, string& t) {
+    int i = 0, j = 0, ans = 0;
+    while(i < t.size()) {
+        while(j >= 0 && t[i] != p[j]) j = lps[j];
+        i++, j++;
+        if(j == p.size()) // match
+            j = lps[j], ++ans;
+    }
+    return ans;
+}
+```
+
 ### Z Function
 
 https://practice.geeksforgeeks.org/problems/search-pattern/0
